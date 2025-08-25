@@ -28,22 +28,36 @@ partial class FrmPrincipal
   /// </summary>
   private void InitializeComponent()
   {
-    groupBox1 = new GroupBox();
+    components = new System.ComponentModel.Container();
+    grpBoxInformacao = new GroupBox();
+    txtBxMesagem = new TextBox();
     statusStrip1 = new StatusStrip();
     stsLblIP = new ToolStripStatusLabel();
     StsLblSession = new ToolStripStatusLabel();
+    tmrFluxo = new System.Windows.Forms.Timer(components);
+    grpBoxInformacao.SuspendLayout();
     statusStrip1.SuspendLayout();
     SuspendLayout();
     // 
-    // groupBox1
+    // grpBoxInformacao
     // 
-    groupBox1.Dock = DockStyle.Top;
-    groupBox1.Location = new Point(0, 0);
-    groupBox1.Name = "groupBox1";
-    groupBox1.Size = new Size(574, 333);
-    groupBox1.TabIndex = 0;
-    groupBox1.TabStop = false;
-    groupBox1.Text = "groupBox1";
+    grpBoxInformacao.Controls.Add(txtBxMesagem);
+    grpBoxInformacao.Dock = DockStyle.Top;
+    grpBoxInformacao.Location = new Point(0, 0);
+    grpBoxInformacao.Name = "grpBoxInformacao";
+    grpBoxInformacao.Size = new Size(574, 333);
+    grpBoxInformacao.TabIndex = 0;
+    grpBoxInformacao.TabStop = false;
+    grpBoxInformacao.Text = "Informação";
+    // 
+    // txtBxMesagem
+    // 
+    txtBxMesagem.Dock = DockStyle.Fill;
+    txtBxMesagem.Location = new Point(3, 19);
+    txtBxMesagem.Multiline = true;
+    txtBxMesagem.Name = "txtBxMesagem";
+    txtBxMesagem.Size = new Size(568, 311);
+    txtBxMesagem.TabIndex = 0;
     // 
     // statusStrip1
     // 
@@ -67,15 +81,23 @@ partial class FrmPrincipal
     StsLblSession.Size = new Size(118, 17);
     StsLblSession.Text = "toolStripStatusLabel1";
     // 
+    // tmrFluxo
+    // 
+    tmrFluxo.Interval = 2000;
+    tmrFluxo.Tick += tmrFluxo_Tick;
+    // 
     // FrmPrincipal
     // 
     AutoScaleDimensions = new SizeF(7F, 15F);
     AutoScaleMode = AutoScaleMode.Font;
     ClientSize = new Size(574, 621);
     Controls.Add(statusStrip1);
-    Controls.Add(groupBox1);
+    Controls.Add(grpBoxInformacao);
     Name = "FrmPrincipal";
     Text = "Form1";
+    Shown += FrmPrincipal_Shown;
+    grpBoxInformacao.ResumeLayout(false);
+    grpBoxInformacao.PerformLayout();
     statusStrip1.ResumeLayout(false);
     statusStrip1.PerformLayout();
     ResumeLayout(false);
@@ -84,8 +106,10 @@ partial class FrmPrincipal
 
   #endregion
 
-  private GroupBox groupBox1;
+  private GroupBox grpBoxInformacao;
   private StatusStrip statusStrip1;
   private ToolStripStatusLabel stsLblIP;
   private ToolStripStatusLabel StsLblSession;
+  private System.Windows.Forms.Timer tmrFluxo;
+  private TextBox txtBxMesagem;
 }
