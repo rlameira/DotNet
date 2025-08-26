@@ -94,7 +94,7 @@ partial class FrmPrincipal
     Controls.Add(statusStrip1);
     Controls.Add(grpBoxInformacao);
     Name = "FrmPrincipal";
-    Text = "Form1";
+    Text = "Monitor CtrlID";
     Shown += FrmPrincipal_Shown;
     grpBoxInformacao.ResumeLayout(false);
     grpBoxInformacao.PerformLayout();

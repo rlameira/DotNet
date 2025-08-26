@@ -5,13 +5,13 @@ using MonitorCtrlID.src.Models;
 
 namespace MonitorCtrlID.Src.Data;
 
-public partial class FBSBContexto : DbContext
+public partial class FBDBContexto : DbContext
 {
-    public FBSBContexto()
+    public FBDBContexto()
     {
     }
 
-    public FBSBContexto(DbContextOptions<FBSBContexto> options)
+    public FBDBContexto(DbContextOptions<FBDBContexto> options)
         : base(options)
     {
     }
@@ -92,7 +92,7 @@ public partial class FBSBContexto : DbContext
 
     public virtual DbSet<Motivoliberacao> Motivoliberacaos { get; set; }
 
-    public virtual DbSet<Operacao> Operacaos { get; set; }
+    public virtual DbSet<Operacao> Operacoes { get; set; }
 
     public virtual DbSet<Pessoa> Pessoas { get; set; }
 
@@ -1257,43 +1257,43 @@ public partial class FBSBContexto : DbContext
 
         modelBuilder.Entity<Operacao>(entity =>
         {
-            entity.HasKey(e => new { e.Codpessoa, e.Codequipamento, e.Operacao1, e.Codsensor }).HasName("pk_OPERACAO");
+            entity.HasKey(e => new { e.CodPessoa, e.CodEquipamento, e.Operacao1, e.CodSensor }).HasName("pk_OPERACAO");
 
             entity.ToTable("OPERACAO");
 
-            entity.HasIndex(e => new { e.Codpessoa, e.Codsensor, e.Codequipamento, e.Operacao1 }, "pk_OPERACAO").IsUnique();
+            entity.HasIndex(e => new { e.CodPessoa, e.CodSensor, e.CodEquipamento, e.Operacao1 }, "pk_OPERACAO").IsUnique();
 
-            entity.Property(e => e.Codpessoa).HasColumnName("CODPESSOA");
-            entity.Property(e => e.Codequipamento).HasColumnName("CODEQUIPAMENTO");
+            entity.Property(e => e.CodPessoa).HasColumnName("CODPESSOA");
+            entity.Property(e => e.CodEquipamento).HasColumnName("CODEQUIPAMENTO");
             entity.Property(e => e.Operacao1)
                 .HasColumnType("CHAR(1)")
                 .HasColumnName("OPERACAO");
-            entity.Property(e => e.Codsensor).HasColumnName("CODSENSOR");
+            entity.Property(e => e.CodSensor).HasColumnName("CODSENSOR");
             entity.Property(e => e.Cartao).HasColumnName("CARTAO");
-            entity.Property(e => e.Codhorario).HasColumnName("CODHORARIO");
-            entity.Property(e => e.Codunidade).HasColumnName("CODUNIDADE");
+            entity.Property(e => e.CodHorario).HasColumnName("CODHORARIO");
+            entity.Property(e => e.CodUnidade).HasColumnName("CODUNIDADE");
             entity.Property(e => e.Dados)
                 .HasMaxLength(1000)
                 .HasColumnName("DADOS");
-            entity.Property(e => e.Datahora).HasColumnName("DATAHORA");
-            entity.Property(e => e.Dtfim)
+            entity.Property(e => e.DataHora).HasColumnName("DATAHORA");
+            entity.Property(e => e.DtFim)
                 .HasMaxLength(8)
                 .HasColumnName("DTFIM");
-            entity.Property(e => e.Dtinicio)
+            entity.Property(e => e.DtInicio)
                 .HasMaxLength(8)
                 .HasColumnName("DTINICIO");
             entity.Property(e => e.Nome)
                 .HasMaxLength(50)
                 .HasColumnName("NOME");
-            entity.Property(e => e.Numerooperacao).HasColumnName("NUMEROOPERACAO");
+            entity.Property(e => e.NumeroOperacao).HasColumnName("NUMEROOPERACAO");
             entity.Property(e => e.Opcoes)
                 .HasMaxLength(1000)
                 .HasColumnName("OPCOES");
-            entity.Property(e => e.Opdisponivel).HasColumnName("OPDISPONIVEL");
+            entity.Property(e => e.OpDisponivel).HasColumnName("OPDISPONIVEL");
             entity.Property(e => e.Parametro)
                 .HasMaxLength(500)
                 .HasColumnName("PARAMETRO");
-            entity.Property(e => e.Saidaauxiliar).HasColumnName("SAIDAAUXILIAR");
+            entity.Property(e => e.SaidaAuxiliar).HasColumnName("SAIDAAUXILIAR");
             entity.Property(e => e.Senha)
                 .HasMaxLength(5)
                 .HasColumnName("SENHA");

@@ -5,9 +5,9 @@ namespace MonitorCtrlID.src.Models;
 
 public partial class Operacao
 {
-    public int Codpessoa { get; set; }
+    public int CodPessoa { get; set; }
 
-    public int Codequipamento { get; set; }
+    public int CodEquipamento { get; set; }
 
     public string Operacao1 { get; set; } = null!;
 
@@ -17,17 +17,17 @@ public partial class Operacao
 
     public string? Senha { get; set; }
 
-    public int? Codhorario { get; set; }
+    public int? CodHorario { get; set; }
 
-    public DateTime? Datahora { get; set; }
+    public DateTime? DataHora { get; set; }
 
-    public DateTime? Opdisponivel { get; set; }
+    public DateTime? OpDisponivel { get; set; }
 
     public string? Parametro { get; set; }
 
-    public int Codsensor { get; set; }
+    public int CodSensor { get; set; }
 
-    public int? Codunidade { get; set; }
+    public int? CodUnidade { get; set; }
 
     public string? Tabela { get; set; }
 
@@ -35,13 +35,13 @@ public partial class Operacao
 
     public string? Opcoes { get; set; }
 
-    public int? Numerooperacao { get; set; }
+    public int? NumeroOperacao { get; set; }
 
-    public int? Saidaauxiliar { get; set; }
+    public int? SaidaAuxiliar { get; set; }
 
     public int? Tempo { get; set; }
 
-    public string? Dtinicio { get; set; }
+    public string? DtInicio { get; set; }
 
-    public string? Dtfim { get; set; }
+    public string? DtFim { get; set; }
 }
