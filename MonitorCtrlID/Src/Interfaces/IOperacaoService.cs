@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MonitorCtrlID.src.Models;
+﻿using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.Data;
 
 namespace MonitorCtrlID.Src.Interfaces
@@ -10,12 +9,12 @@ namespace MonitorCtrlID.Src.Interfaces
     List<Operacao> GetUltimasOperacoes(int codEquipamento = 0, int top = 5);
   }
 
-  public class OperacaoService : IServiceBase<Operacao>, IOperacaoService
+  public class OperacaoService(FBDBContexto context) : IServiceBase<Operacao>, IOperacaoService
   {
-    protected readonly FBDBContexto _context;
-    public OperacaoService(FBDBContexto context) {
-      _context = context;
-    }
+    //protected readonly FBDBContexto _context;
+    //public OperacaoService(FBDBContexto context) {
+    //  _context = context;
+    //}
 
     public void Add(Operacao entity)
     {

@@ -3,14 +3,14 @@ using MonitorCtrlID.Src.Interfaces;
 
 namespace MonitorCtrlID.src.Services
 {
-  public class ServiceBase<T> : IServiceBase<T> where T : class
+  public class ServiceBase<T>(FBDBContexto _context) : IServiceBase<T> where T : class
   {
-    protected readonly FBDBContexto _context;
+    //protected readonly FBDBContexto _context;
 
-    public ServiceBase(FBDBContexto context)
-    {
-      _context = context;
-    }
+    //public ServiceBase(FBDBContexto context)
+    //{
+    //  _context = context;
+    //}
 
     public virtual List<T> GetAll(int top = 0)
     {
@@ -19,7 +19,8 @@ namespace MonitorCtrlID.src.Services
       if (top > 0)
         query = query.Take(top);
 
-      return query.ToList();
+      //return query.ToList();
+      return [.. query];
     }
 
     public virtual T? Get(params object[] keys)

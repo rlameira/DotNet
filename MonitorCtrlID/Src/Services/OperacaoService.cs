@@ -5,14 +5,13 @@ using MonitorCtrlID.Src.Interfaces;
 namespace MonitorCtrlID.Src.Services
 {
 
-  public class OperacaoService : IOperacaoService
+  public class OperacaoService(FBDBContexto _context) : IOperacaoService
   {
-    private readonly FBDBContexto _context;
-
-    public OperacaoService(FBDBContexto context)
-    {
-      _context = context;
-    }
+    //private readonly FBDBContexto _context;
+    //public OperacaoService(FBDBContexto context)
+    //{
+    //  _context = context;
+    //}
 
     public List<Operacao> GetExclusoes(int codEquipamento, int top)
     {
@@ -23,7 +22,8 @@ namespace MonitorCtrlID.Src.Services
       if (top > 0)
         query = query.Take(top);
 
-      return query.ToList();
+      //return query.ToList();
+      return [.. query];
     }
 
     public List<Operacao> GetInclusoes(int codEquipamento, int top)
@@ -35,7 +35,8 @@ namespace MonitorCtrlID.Src.Services
       if (top > 0)
         query = query.Take(top);
 
-      return query.ToList();
+      //return query.ToList();
+      return [.. query];
     }
 
     public void ExcluirOperacao(Operacao operacao)
@@ -51,7 +52,8 @@ namespace MonitorCtrlID.Src.Services
       if (top > 0)
         query = query.Take(top);
 
-      return query.ToList();
+      //return query.ToList();
+      return [.. query];
     }
 
     List<Operacao> IServiceBase<Operacao>.GetAll(int top)
