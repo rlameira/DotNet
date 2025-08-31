@@ -2,13 +2,19 @@
 {
   public partial class ControlIdModel
   {
-    public int Codigo { get; set; }
-    public string Url { get; set; }
-    public int Porta  { get; set; }
-    public string User { get; set; }
-    public string Password { get; set; }
-    public string Session { get; set; }
-    public bool SSL { get; set; }
+    public int Codigo { get; set; } = 0;
+    public string Ip { get; set; } = "";
+    public string Url { get; set; } = "";
+    public int Porta { get; set; } = 80;
+    public string User { get; set; } = "";
+    public string Password { get; set; } = "";
+    public string Session { get; set; } = "";
+    public bool SSL { get; set; }  = false;
+    public string EntradaSaida { get; set; } = "A";
+    public bool ImportaAcessos { get; set; } = false;
+    public string PastaDeFotos { get; set; } = "";
+    public int NumeroUsuariosPorCiclo { get; set; } = 5;
+    public DateTime UltimoRegistro { get; set; }
 
   }
 }

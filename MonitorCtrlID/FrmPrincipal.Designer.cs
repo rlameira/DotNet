@@ -35,19 +35,21 @@ partial class FrmPrincipal
     stsLblIP = new ToolStripStatusLabel();
     StsLblSession = new ToolStripStatusLabel();
     tmrFluxo = new System.Windows.Forms.Timer(components);
+    panel1 = new Panel();
     pictureBox1 = new PictureBox();
     grpBoxInformacao.SuspendLayout();
     statusStrip1.SuspendLayout();
+    panel1.SuspendLayout();
     ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
     SuspendLayout();
     // 
     // grpBoxInformacao
     // 
     grpBoxInformacao.Controls.Add(txtBxMesagem);
-    grpBoxInformacao.Dock = DockStyle.Fill;
+    grpBoxInformacao.Dock = DockStyle.Top;
     grpBoxInformacao.Location = new Point(0, 0);
     grpBoxInformacao.Name = "grpBoxInformacao";
-    grpBoxInformacao.Size = new Size(524, 561);
+    grpBoxInformacao.Size = new Size(524, 294);
     grpBoxInformacao.TabIndex = 0;
     grpBoxInformacao.TabStop = false;
     grpBoxInformacao.Text = "Informação";
@@ -58,7 +60,7 @@ partial class FrmPrincipal
     txtBxMesagem.Location = new Point(3, 19);
     txtBxMesagem.Multiline = true;
     txtBxMesagem.Name = "txtBxMesagem";
-    txtBxMesagem.Size = new Size(518, 539);
+    txtBxMesagem.Size = new Size(518, 272);
     txtBxMesagem.TabIndex = 0;
     // 
     // statusStrip1
@@ -80,24 +82,33 @@ partial class FrmPrincipal
     // StsLblSession
     // 
     StsLblSession.Name = "StsLblSession";
-    StsLblSession.Size = new Size(118, 17);
-    StsLblSession.Text = "toolStripStatusLabel1";
+    StsLblSession.Size = new Size(49, 17);
+    StsLblSession.Text = "Session:";
     // 
     // tmrFluxo
     // 
     tmrFluxo.Interval = 2000;
     tmrFluxo.Tick += tmrFluxo_Tick;
     // 
+    // panel1
+    // 
+    panel1.Controls.Add(pictureBox1);
+    panel1.Dock = DockStyle.Bottom;
+    panel1.Location = new Point(0, 294);
+    panel1.Name = "panel1";
+    panel1.Size = new Size(524, 245);
+    panel1.TabIndex = 2;
+    // 
     // pictureBox1
     // 
     pictureBox1.BackgroundImage = Properties.Resources.SisPlenaAcessoMonitor_530;
     pictureBox1.Dock = DockStyle.Bottom;
     pictureBox1.InitialImage = null;
-    pictureBox1.Location = new Point(0, 294);
+    pictureBox1.Location = new Point(0, 0);
     pictureBox1.Name = "pictureBox1";
     pictureBox1.Size = new Size(524, 245);
     pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
-    pictureBox1.TabIndex = 2;
+    pictureBox1.TabIndex = 3;
     pictureBox1.TabStop = false;
     // 
     // FrmPrincipal
@@ -105,9 +116,9 @@ partial class FrmPrincipal
     AutoScaleDimensions = new SizeF(7F, 15F);
     AutoScaleMode = AutoScaleMode.Font;
     ClientSize = new Size(524, 561);
-    Controls.Add(pictureBox1);
-    Controls.Add(statusStrip1);
     Controls.Add(grpBoxInformacao);
+    Controls.Add(panel1);
+    Controls.Add(statusStrip1);
     Name = "FrmPrincipal";
     Text = "Monitor CtrlID";
     Shown += FrmPrincipal_Shown;
@@ -115,6 +126,7 @@ partial class FrmPrincipal
     grpBoxInformacao.PerformLayout();
     statusStrip1.ResumeLayout(false);
     statusStrip1.PerformLayout();
+    panel1.ResumeLayout(false);
     ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
     ResumeLayout(false);
     PerformLayout();
@@ -128,5 +140,6 @@ partial class FrmPrincipal
   private ToolStripStatusLabel StsLblSession;
   private System.Windows.Forms.Timer tmrFluxo;
   private TextBox txtBxMesagem;
+  private Panel panel1;
   private PictureBox pictureBox1;
 }

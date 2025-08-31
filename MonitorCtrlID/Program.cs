@@ -1,3 +1,8 @@
+using MonitorCtrlID.Src.ControlId.Model;
+using MonitorCtrlID.Src.Controllers;
+using MonitorCtrlID.Src.Data;
+using MonitorCtrlID.Src.Services;
+
 namespace MonitorCtrlID;
 
 static class Program
@@ -11,6 +16,7 @@ static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        Application.Run(new FrmPrincipal());
+
+    Application.Run(new FrmPrincipal());
     }    
 }

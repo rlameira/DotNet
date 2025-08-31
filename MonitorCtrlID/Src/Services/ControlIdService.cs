@@ -1,59 +1,72 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
+﻿using Microsoft.VisualBasic.Logging;
+using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.ControlId.Model;
 using MonitorCtrlID.Src.Data;
 using System.Net.Http.Headers;
-using System.Reflection.Metadata.Ecma335;
+using System.Text;
+using System.Text.Json;
 using System.Windows.Forms;
+using static MonitorCtrlID.Src.ControlId.IDAccess;
 
 namespace MonitorCtrlID.Src.Services
 {
-  internal class ControlIdService(ControlIdModel _controlId)
+  //internal class ControlIdService(FBDBContexto contexto, ControlIdModel controlId)
+  public class ControlIdService
   {
 
-    //protected readonly ControlIdModel _controlIdModel;
+    protected readonly ControlIdModel controlId;
+    protected readonly FBDBContexto _contexto;
+    protected readonly OperacaoService _operacaoService;
+    protected readonly RegistrosAtivosService _registrosService;
+    protected readonly OperacaoService _operaceosService;
 
-    //public ControlIdService(ControlIdModel controlIdModel)
-    //{
-    //  _controlIdModel = controlIdModel;
-    //}
+    public ControlIdService(ControlIdModel controlIdModel, FBDBContexto contexto)
+    {
+      controlId = controlIdModel;
+      _contexto = contexto;
+      _operacaoService = new OperacaoService(_contexto);
+      _registrosService = new RegistrosAtivosService(_contexto);
+
+      _operaceosService = new OperacaoService(_contexto);
+    }
 
     public string Conectar()
     {
       string msg;
       try
       {
-        _controlId.Url = _controlId.Url.Trim();
-        _controlId.Session = null; // erases the previous session (invalida sessão anterior)
+        controlId.Ip = controlId.Ip.Trim();
+        controlId.Session = "Sessão não inicializada"; // erases the previous session (invalida sessão anterior)
 
-        if (_controlId.SSL)
+        if (controlId.SSL == true)
         {
-          _controlId.Url = "https://" + _controlId.Url;
-          if (_controlId.Porta != 443)
-            _controlId.Url += ":" + _controlId.Porta;
+          controlId.Url = "https://" + controlId.Ip;
+          if (controlId.Porta != 443)
+            controlId.Url += ":" + controlId.Porta;
         }
         else
         {
-          _controlId.Url = "http://" + _controlId.Url;
-          if (_controlId.Porta != 80)
-            _controlId.Url += ":" + _controlId.Porta;
+          controlId.Url = "http://" + controlId.Ip;
+          if (controlId.Porta != 80)
+            controlId.Url += ":" + controlId.Porta;
         }
-        _controlId.Url += "/";
+        controlId.Url += "/";
 
-        msg = "Device: " + _controlId.Url;
+        msg = "Device: " + controlId.Url;
 
         // See another robust mode to login with serialization of JSON objects in the project "Remote Control" creating structures that are serialized
         // (Veja uma outra forma mais robusta de como poderia ser feito um login com serialização de objetos JSON no projeto de "Controle Remoto" criando estruturas que são serializadas se transformando em strings)
         // https://github.com/controlid/iDAccess/blob/master/ControleRemoto-CS/idAccess.cs
-        string response = WebJsonService.Send(_controlId.Url + "login", "{\"login\":\"" + _controlId.User + "\",\"password\":\"" + _controlId.Password + "\"}");
-        //AddLog(response);
+
+        string response = WebJsonService.Send(controlId.Url + "login", "{\"login\":\"" + controlId.User + "\",\"password\":\"" + controlId.Password + "\"}");
 
         // Simple method to get the session
         // (Forma mais simples de pegar a sessão)
+
         if (response.Contains("session"))
         {
-          _controlId.Session = response.Split('"')[3];
-          msg = "OK!";
+          controlId.Session = response.Split('"')[3];
+          msg = $"OK: {msg}";
 
           //// There is still a connection in the application settings to facilitate
           //// (Persiste a conexão nas configurações do aplicativo para facilitar)
@@ -67,7 +80,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
-        msg = ex.Message;
+        msg = $"EROR: {ex.Message}";
       }
       return msg;
     }
@@ -86,35 +99,95 @@ namespace MonitorCtrlID.Src.Services
             ",\"second\":" + dt.Second +
             "}";
 
-        msg = WebJsonService.Send(_controlId.Url + "set_system_time", cmd, _controlId.Session);
+        msg = WebJsonService.Send(controlId.Url + "set_system_time", cmd, controlId.Session);
+        msg = $"OK: {msg}";
       }
       catch (Exception ex)
       {
-        msg = ex.Message;
+        msg = $"EROR: {ex.Message}";
       }
       return msg;
     }
 
-    public string IncluirUser(ControlIdUserModel user)
+    public async Task<string> IncluirUsuariosOperacao(int top)
+    {
+      string msg = "";
+      var operacoes = _operaceosService.GetInclusoes(controlId.Codigo, top);
+      foreach (var operacao in operacoes)
+      {
+        ControlIdUserModel user = new ControlIdUserModel();
+
+        user.Id = operacao.CodPessoa;
+        user.Name = operacao.Nome != null ? operacao.Nome : "";
+
+        msg = await IncluirUser(user);
+
+        if (msg.StartsWith("OK"))
+        {
+          msg = await AlterarUser(user);
+          _operacaoService.ExcluirOperacao(operacao);
+        }
+
+          
+      }
+      return  msg;
+    }
+
+    public string ExcluirUsuariosOperacao(int top)
+    {
+      string msg = "";
+      var operacoes = _operaceosService.GetExclusoes(controlId.Codigo, top);
+      foreach (var operacao in operacoes)
+      {
+        ControlIdUserModel user = new ControlIdUserModel();
+
+        user.Id = operacao.CodPessoa;
+        user.Name = operacao.Nome != null ? operacao.Nome : "";
+
+        msg = ExcluirUser(user);
+
+        if (msg.StartsWith("OK"))
+        {
+          _operacaoService.ExcluirOperacao(operacao);
+        }
+      }
+      return msg;
+    }
+
+    public async Task<string> IncluirUser(ControlIdUserModel user)
     {
       string msg;
       try
       {
         // Using 'string' there are several situations that need to be handled manually do so via to parse JSON is much better
         // (Usando string há várias situações que precisam ser tratadas manualmente por isso fazer via com parse JSON é bem melhor)
-        string cmd = "{" +
-            "\"object\" : \"users\"," +
-            "\"values\" : [{" +
-                    (user.Id.ToString() == "" ? "" : ("\"id\" :" + user.Id.ToString() + ",")) + // optional (opcional)
-                    "\"name\" :\"" + user.Name + "\"," +
-                    "\"registration\" : \"" + user.Registration + "\"" +
-                "}]" +
-            "}";
-        msg = WebJsonService.Send(_controlId.Url + "create_objects", cmd, _controlId.Session);
+
+        //string cmd = "{" +
+        //    "\"object\" : \"users\"," +
+        //    "\"values\" : [{" +
+        //            (user.Id.ToString() == "" ? "" : ("\"id\" :" + user.Id.ToString() + ",")) + // optional (opcional)
+        //            "\"name\" :\"" + user.Name + "\"," +
+        //            "\"registration\" : \"" + user.Registration + "\"" +
+        //        "}]" +
+        //    "}";
+
+        string cmd = JsonSerializer.Serialize(user);
+
+        msg = WebJsonService.Send(controlId.Url + "create_objects", cmd, controlId.Session);
+      
+        if (msg.Contains("UNIQUE constraint failed"))
+        {
+          msg = "Erro: já existe registro com este ID!";
+        }
+        else
+        {
+          msg = "Registrado";
+        };
+        msg = $"OK: {msg}";
       }
       catch (Exception ex)
       {
-        msg = ex.Message;
+        msg = $"EROR: {ex.Message}";
       }
       return msg;
     }
@@ -125,11 +198,12 @@ namespace MonitorCtrlID.Src.Services
       try
       {
         long id = long.Parse(user.Id.ToString());
-        msg = WebJsonService.Send(_controlId.Url + "destroy_objects", "{\"object\":\"users\",\"where\":{\"users\":{\"id\":[" + id + "]}}}", _controlId.Session);
+        msg = WebJsonService.Send(controlId.Url + "destroy_objects", "{\"object\":\"users\",\"where\":{\"users\":{\"id\":[" + id + "]}}}", controlId.Session);
+        msg = $"OK: {msg}";
       }
       catch (Exception ex)
       {
-        msg = ex.Message;
+        msg = $"EROR: {ex.Message}";
       }
       return msg;
     }
@@ -149,9 +223,9 @@ namespace MonitorCtrlID.Src.Services
                 "}" +
             "}";
 
-        msg = WebJsonService.Send(_controlId.Url + "modify_objects", cmd, _controlId.Session);
+        msg = WebJsonService.Send(controlId.Url + "modify_objects", cmd, controlId.Session);
 
-        string fotoFilename = "";
+        string fotoFilename = $"{controlId.PastaDeFotos}USB{user.Id.ToString().PadLeft(9, '0')}.jpg";
 
         if (!string.IsNullOrEmpty(fotoFilename))
         { 
@@ -162,7 +236,7 @@ namespace MonitorCtrlID.Src.Services
           long timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
 
           var client = new HttpClient();
-          string url = $"{_controlId.Url}user_set_image.fcgi?user_id={id}&session={_controlId.Session}&timestamp={timestamp}";
+          string url = $"{controlId.Url}user_set_image.fcgi?user_id={id}&session={controlId.Session}&timestamp={timestamp}";
 
           var content = new ByteArrayContent(imageBytes);
           content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
@@ -179,13 +253,55 @@ namespace MonitorCtrlID.Src.Services
             msg = "Erro ao cadastrar foto.";
           }
         }
+        msg = $"OK: {msg}";
       }
       catch (Exception ex)
       {
-        msg = ex.Message;
+        msg = $"EROR: {ex.Message}";
       }
       return msg;
     }
 
+    public string ImportarRegistros(ControlIdModel controlId)
+    {
+      var logsProcessados = 0;
+      var msg = "";
+
+      var registroAtivo = _registrosService.GetUltimoByCodEquip(controlId.Codigo);
+      controlId.UltimoRegistro = DateTime.MinValue.Date;
+      if (registroAtivo != null)
+      {
+        controlId.UltimoRegistro = (registroAtivo.Dataehora ?? DateTime.MinValue).Date;
+      }
+      try
+      {
+        var list = WebJsonService.Send<ResultList>(controlId.Url + "load_objects", "{\"object\":\"access_logs\"}", controlId.Session); // Consulte a documentação para fazer 'Where'
+        //for (int i = 0; i < list.access_logs.Length; i++)
+        foreach (var log in list.access_logs)
+        {
+          if ((log.Date > controlId.UltimoRegistro) && (log.id > 0))
+          {
+            Registrosativo registrosativo = new Registrosativo();
+            registrosativo.Codpessoavisitada = 0;
+            registrosativo.Codpessoavisitante = Convert.ToInt32(log.id);
+            registrosativo.Codequipamento = controlId.Codigo;
+            registrosativo.EntradaSaida = controlId.EntradaSaida;
+            registrosativo.Dataehora = log.Date;
+            registrosativo.Data = log.Date.Date;
+            registrosativo.Hora = log.Date.TimeOfDay; ;
+
+            _registrosService.Add(registrosativo);
+            logsProcessados++;
+          }
+        }
+        //AddLog(sb.ToString());
+        msg = $"OK {logsProcessados}/{list.access_logs.Count()}";
+      }
+      catch (Exception ex)
+      {
+        msg = $"ERRO: {ex.Message}";
+      }
+      return msg;
+    }
   }
 }

@@ -1,21 +1,40 @@
+using MonitorCtrlID.Src.ControlId.Model;
+using MonitorCtrlID.Src.Controllers;
+using MonitorCtrlID.Src.Data;
+using MonitorCtrlID.Src.Services;
 using System.Configuration;
 
 namespace MonitorCtrlID;
 
 public partial class FrmPrincipal : Form
 {
-  string deviceIp = ConfigurationManager.AppSettings["DeviceIp"];
-  string devicePorta = ConfigurationManager.AppSettings["DevicePorta"];
-  string deviceSSL = ConfigurationManager.AppSettings["DeviceSSL"];
-  string deviceUser = ConfigurationManager.AppSettings["DeviceUser"];
-  string devicePassword = ConfigurationManager.AppSettings["DevicePassword"];
-  string deviceEntradaSaida = ConfigurationManager.AppSettings["DeviceEntradaSaida"];
-  bool importaAcessos = (ConfigurationManager.AppSettings["ImportaAcessos"] == "SIM");
-  string pastaDeFotos = ConfigurationManager.AppSettings["PastaDeFotos"];
-  string tempoTimer = ConfigurationManager.AppSettings["TempoTimer"];
+  readonly ControlIdModel _controlID;
+  readonly FBDBContexto _contexto;
+  readonly ControlIdService _service;
+  readonly ControlIdController _controller;  
 
+  //ControlIdModel _controlIdModel = new ControlIdModel();  
+
+  //public FrmPrincipal(ControlIdModel controlId, ControlIdService service, ControlIdController controller)
   public FrmPrincipal()
   {
+    _contexto = new FBDBContexto();
+    _controlID = new ControlIdModel();
+
+
+    _controlID.Ip = ConfigurationManager.AppSettings["DeviceIp"];
+    _controlID.Porta = Convert.ToInt32(ConfigurationManager.AppSettings["DevicePorta"]);
+    _controlID.SSL = (ConfigurationManager.AppSettings["DeviceSSL"] == "SIM");
+    _controlID.User = ConfigurationManager.AppSettings["DeviceUser"];
+    _controlID.Password = ConfigurationManager.AppSettings["DevicePassword"];
+    _controlID.EntradaSaida = ConfigurationManager.AppSettings["DeviceEntradaSaida"];
+    _controlID.ImportaAcessos = (ConfigurationManager.AppSettings["ImportaAcessos"] == "SIM");
+    _controlID.PastaDeFotos = ConfigurationManager.AppSettings["PastaDeFotos"];
+    _controlID.NumeroUsuariosPorCiclo = Convert.ToInt32(ConfigurationManager.AppSettings["NumeroUsersPorCiclo"]);
+
+    _service = new ControlIdService(_controlID, _contexto);
+    _controller = new ControlIdController(_controlID, _service);
+
     InitializeComponent();
   }
 
@@ -32,9 +51,26 @@ public partial class FrmPrincipal : Form
 
   private void Conecta()
   {
-    stsLblIP.Text = $"{deviceIp}:{devicePorta} ({deviceEntradaSaida})";
-    StsLblSession.Text = "";
-    Fluxo();
+    string tempoTimer = ConfigurationManager.AppSettings["TempoTimer"];
+
+    stsLblIP.Text = $"{_controlID.Ip}:{_controlID.Porta} ({_controlID.EntradaSaida})";
+
+    AddMsg($"Conectando...");
+    //var _controller = new ControlIdController(controlID, service);
+    var msg = _controller.Conectar();
+
+    AddMsg($"Conectar: {msg}");
+    StsLblSession.Text = _controlID.Session;
+
+    //if (msg.StartsWith("OK"))
+    {
+      tmrFluxo.Interval = Convert.ToInt32(tempoTimer);
+
+      AddMsg($"Ajustando Data e Hora...");
+      msg = _controller.AjustarDataEHora(DateTime.Now);
+      AddMsg($"Ajustar Data e Hora: {msg}");
+      Fluxo();
+    }
   }
 
   private void Fluxo()
@@ -42,7 +78,35 @@ public partial class FrmPrincipal : Form
     tmrFluxo.Enabled = false;
     txtBxMesagem.Clear();
     AddMsg("Fluxo");
+
+    if (_controlID.ImportaAcessos)
+    {
+      ImportarRegistros();
+    }
+    //
+    IncluirUser();
+    //
+    ExcluirUser();
     tmrFluxo.Enabled = true;
+  }
+
+
+  private void ImportarRegistros()
+  {
+    //
+    AddMsg($"Importando Registros...");
+    var msg = _controller.ImportarRegistros();
+  }
+  private void IncluirUser()
+  {
+    //
+    AddMsg($"Incluindo Usuários...");
+    var msg = _controller.IncluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo);
+  }
+  private void ExcluirUser()
+  {
+    AddMsg($"Excluindo Usuários...");
+    var msg = _controller.ExcluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo);
   }
 
   private void AddMsg(string msg)
