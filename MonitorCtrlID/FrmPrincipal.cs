@@ -1,3 +1,4 @@
+using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.ControlId.Model;
 using MonitorCtrlID.Src.Controllers;
 using MonitorCtrlID.Src.Data;
@@ -21,7 +22,7 @@ public partial class FrmPrincipal : Form
     _contexto = new FBDBContexto(connString);
     _controlID = new ControlIdModel();
 
-
+    _controlID.Codigo = Convert.ToInt32(ConfigurationManager.AppSettings["DeviceCode"]);
     _controlID.Ip = ConfigurationManager.AppSettings["DeviceIp"];
     _controlID.Porta = Convert.ToInt32(ConfigurationManager.AppSettings["DevicePorta"]);
     _controlID.SSL = (ConfigurationManager.AppSettings["DeviceSSL"] == "SIM");
@@ -98,17 +99,17 @@ public partial class FrmPrincipal : Form
     var msg = _controller.ImportarRegistros();
     AddMsg($"{msg}");
   }
-  private void IncluirUser()
+  private async void IncluirUser()
   {
     //
     AddMsg($"Incluindo Usuários...");
-    var msg = _controller.IncluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo);
+    var msg = await _controller.IncluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo);
     AddMsg($"{msg}");
   }
-  private void ExcluirUser()
+  private async void ExcluirUser()
   {
     AddMsg($"Excluindo Usuários...");
-    var msg = _controller.ExcluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo);
+    var msg = await _controller.ExcluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo);
     AddMsg($"{msg}");
   }
 
@@ -119,6 +120,24 @@ public partial class FrmPrincipal : Form
 
   private void FrmPrincipal_Shown(object sender, EventArgs e)
   {
+    //Registrosativo registros = new Registrosativo();
+
+    //registros.Codpessoavisitada = 0;
+    //registros.Codpessoavisitante = 123456;
+    //registros.Dataehora = DateTime.Now;
+    //registros.Data = registros.Dataehora.Value.Date;
+    //registros.Hora = registros.Dataehora.Value.TimeOfDay;
+    //registros.Codequipamento = _controlID.Codigo;
+    //registros.EntradaSaida = _controlID.EntradaSaida;
+    //registros.Codempresa = 1;
+    //registros.Sensor = 0;
+    //registros.Inoutstate = 0;
+    //registros.Evento = 0;
+
+
+    //RegistrosAtivosService registrosService = new RegistrosAtivosService(_contexto);
+    //registrosService.Add(registros);
+
     Conecta();
   }
 }

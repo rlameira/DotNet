@@ -55,13 +55,14 @@ namespace MonitorCtrlID.Src.Services
 
     public void Add(Registrosativo entity)
     {
-      var existe = contexto.Registrosativos
-    .   Any(r => r.Data == entity.Data
+      var registros = contexto.Registrosativos
+        .Where(r => r.Data == entity.Data
            && r.Hora == entity.Hora
            && r.Codequipamento == entity.Codequipamento
-           && r.Codpessoavisitante == entity.Codpessoavisitante);
+           && r.Codpessoavisitante == entity.Codpessoavisitante)
+        .ToList();
 
-      if (!existe)
+      if (registros.Count == 0)
       {
         contexto.Registrosativos.Add(entity);
         contexto.SaveChanges();

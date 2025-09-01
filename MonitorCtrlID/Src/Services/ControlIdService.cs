@@ -2,6 +2,7 @@
 using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.ControlId.Model;
 using MonitorCtrlID.Src.Data;
+using System.Data;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -154,7 +155,7 @@ namespace MonitorCtrlID.Src.Services
 
     public async Task<string> IncluirUser(ControlIdUserModel user)
     {
-      string msg;
+      string msg = "";
       try
       {
         // Using 'string' there are several situations that need to be handled manually do so via to parse JSON is much better
@@ -172,21 +173,19 @@ namespace MonitorCtrlID.Src.Services
         //string cmd = JsonSerializer.Serialize(user);
 
         msg = WebJsonService.Send(controlId.Url + "create_objects", cmd, controlId.Session);
-      
-        if (msg.Contains("UNIQUE constraint failed"))
-        {
-          msg = "Erro: já existe registro com este ID!";
-        }
-        else
-        {
-          msg = "Registrado";
-        };
+        msg = $"Usuário {user.Id} Registrado";
         msg = $"OK: {msg}";
       }
       catch (Exception ex)
       {
-        msg = $"EROR: {ex.Message}";
+          msg = $"ERROR: {ex.Message}";
       }
+
+      if (msg.Contains("UNIQUE constraint failed"))
+      {
+        msg = $"OK: Usuário  {user.Id} já Registrado!";
+      }
+
       return msg;
     }
 
@@ -212,21 +211,23 @@ namespace MonitorCtrlID.Src.Services
       try
       {
         long id = long.Parse(user.Id.ToString());
-        string cmd = "{" +
-            "\"object\" : \"users\"," +
-            "\"where\":{\"users\":{\"id\":[" + id + "]}}," +
-            "\"values\" : {" +
-                    "\"name\" :\"" + user.Name + "\"," +
-                    "\"registration\" : \"" + user.Registration + "\"" +
-                "}" +
-            "}";
-
-        msg = WebJsonService.Send(controlId.Url + "modify_objects", cmd, controlId.Session);
 
         string fotoFilename = $"{controlId.PastaDeFotos}USB{user.Id.ToString().PadLeft(9, '0')}.jpg";
 
-        if (!string.IsNullOrEmpty(fotoFilename))
-        { 
+        if (!string.IsNullOrEmpty(fotoFilename) && File.Exists(fotoFilename))
+        {
+
+          //string cmd = "{" +
+          //  "\"object\" : \"users\"," +
+          //  "\"where\":{\"users\":{\"id\":[" + id + "]}}," +
+          //  "\"values\" : {" +
+          //          "\"name\" :\"" + user.Name + "\"," +
+          //          "\"registration\" : \"" + user.Registration + "\"" +
+          //      "}" +
+          //  "}";
+
+          //msg = WebJsonService.Send(controlId.Url + "modify_objects", cmd, controlId.Session);
+
           string filePath = fotoFilename;
 
           byte[] imageBytes = await Task.Run(() => File.ReadAllBytes(filePath));
@@ -251,11 +252,15 @@ namespace MonitorCtrlID.Src.Services
             msg = "Erro ao cadastrar foto.";
           }
         }
-        msg = $"OK: {msg}";
+        else
+        {
+          msg = $"{fotoFilename} não existe.";
+        }
+          msg = $"OK: {msg}";
       }
       catch (Exception ex)
       {
-        msg = $"EROR: {ex.Message}";
+        msg = $"ERROR: {ex.Message}";
       }
       return msg;
     }
@@ -277,16 +282,20 @@ namespace MonitorCtrlID.Src.Services
         //for (int i = 0; i < list.access_logs.Length; i++)
         foreach (var log in list.access_logs)
         {
-          if ((log.Date > controlId.UltimoRegistro) && (log.id > 0))
+          if ((log.Date > controlId.UltimoRegistro) && (log.user_id > 0))
           {
             Registrosativo registrosativo = new Registrosativo();
             registrosativo.Codpessoavisitada = 0;
-            registrosativo.Codpessoavisitante = Convert.ToInt32(log.id);
+            registrosativo.Codpessoavisitante = Convert.ToInt32(log.user_id);
             registrosativo.Codequipamento = controlId.Codigo;
             registrosativo.EntradaSaida = controlId.EntradaSaida;
             registrosativo.Dataehora = log.Date;
             registrosativo.Data = log.Date.Date;
-            registrosativo.Hora = log.Date.TimeOfDay; ;
+            registrosativo.Hora = log.Date.TimeOfDay;
+            registrosativo.Codempresa = 1;
+            registrosativo.Sensor = 0;
+            registrosativo.Inoutstate = 0;
+            registrosativo.Evento = 0;
 
             _registrosService.Add(registrosativo);
             logsProcessados++;

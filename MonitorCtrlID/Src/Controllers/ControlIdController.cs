@@ -24,14 +24,16 @@ namespace MonitorCtrlID.Src.Controllers
       return _service.ImportarRegistros(_controlId);
     }
 
-    public Task<string> IncluirUsuariosOperacao(int top)
+    public async Task<string> IncluirUsuariosOperacao(int top)
     {
-      return _service.IncluirUsuariosOperacao(top);
+      var msg = await _service.IncluirUsuariosOperacao(top);
+      return msg;
     }
 
-    public Task<string> ExcluirUsuariosOperacao(int top)
+    public async Task<string> ExcluirUsuariosOperacao(int top)
     {
-      return _service.ExcluirUsuariosOperacao(top);
+      var msg = await _service.ExcluirUsuariosOperacao(top);
+      return msg;
     }
 
     public string AjustarDataEHora(DateTime dt)

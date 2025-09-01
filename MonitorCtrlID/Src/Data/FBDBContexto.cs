@@ -1580,9 +1580,10 @@ public partial class FBDBContexto : DbContext
 
         modelBuilder.Entity<Registrosativo>(entity =>
         {
-            entity.HasKey(e => new { e.Data, e.Hora, e.Codequipamento, e.Codpessoavisitante }).HasName("PKREGISTROSATIVOS");
+          //entity.HasKey(e => new { e.Data, e.Hora, e.Codequipamento, e.Codpessoavisitante }).HasName("PKREGISTROSATIVOS");
+          entity.HasKey(e => new { e.Data, e.Hora, e.Codequipamento, e.Codpessoavisitante });
 
-            entity.ToTable("REGISTROSATIVOS");
+          entity.ToTable("REGISTROSATIVOS");
 
             entity.HasIndex(e => new { e.Codpessoavisitante, e.Data, e.Hora }, "CODPESSOADATAHORA_REGATIVOS_IDX");
 
@@ -1590,7 +1591,7 @@ public partial class FBDBContexto : DbContext
 
             entity.HasIndex(e => e.Numcartao, "IDX_NUMCARTAO_REGISTROSATIVOS");
 
-            entity.HasIndex(e => new { e.Codpessoavisitante, e.Codequipamento, e.Data, e.Hora }, "PKREGISTROSATIVOS").IsUnique();
+            //entity.HasIndex(e => new { e.Codpessoavisitante, e.Codequipamento, e.Data, e.Hora }, "PKREGISTROSATIVOS").IsUnique();
 
             entity.HasIndex(e => e.Codequipamento, "REGATIVOS_CODEQUIPAMENTO_IDX");
 
