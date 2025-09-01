@@ -1,10 +1,6 @@
-using MonitorCtrlID.Src.ControlId.Model;
-using MonitorCtrlID.Src.Controllers;
-using MonitorCtrlID.Src.Data;
-using MonitorCtrlID.Src.Services;
+using System.Configuration; // necessário para ConfigurationManager
 
 namespace MonitorCtrlID;
-
 static class Program
 {
     /// <summary>
@@ -16,7 +12,13 @@ static class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
+    // Carrega configuração do appsettings.json
 
-    Application.Run(new FrmPrincipal());
+
+    // Recupera a connection string
+    string connString = ConfigurationManager.ConnectionStrings["FirebirdDb"].ConnectionString;
+
+
+    Application.Run(new FrmPrincipal(connString));
     }    
 }

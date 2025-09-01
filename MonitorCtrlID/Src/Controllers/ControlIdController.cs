@@ -31,7 +31,7 @@ namespace MonitorCtrlID.Src.Controllers
 
     public Task<string> ExcluirUsuariosOperacao(int top)
     {
-      return _service.IncluirUsuariosOperacao(top);
+      return _service.ExcluirUsuariosOperacao(top);
     }
 
     public string AjustarDataEHora(DateTime dt)

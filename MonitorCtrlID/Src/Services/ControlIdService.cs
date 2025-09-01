@@ -126,14 +126,12 @@ namespace MonitorCtrlID.Src.Services
         {
           msg = await AlterarUser(user);
           _operacaoService.ExcluirOperacao(operacao);
-        }
-
-          
+        }       
       }
       return  msg;
     }
 
-    public string ExcluirUsuariosOperacao(int top)
+    public async Task<string> ExcluirUsuariosOperacao(int top)
     {
       string msg = "";
       var operacoes = _operaceosService.GetExclusoes(controlId.Codigo, top);
@@ -144,7 +142,7 @@ namespace MonitorCtrlID.Src.Services
         user.Id = operacao.CodPessoa;
         user.Name = operacao.Nome != null ? operacao.Nome : "";
 
-        msg = ExcluirUser(user);
+        msg = await ExcluirUser(user);
 
         if (msg.StartsWith("OK"))
         {
@@ -162,16 +160,16 @@ namespace MonitorCtrlID.Src.Services
         // Using 'string' there are several situations that need to be handled manually do so via to parse JSON is much better
         // (Usando string há várias situações que precisam ser tratadas manualmente por isso fazer via com parse JSON é bem melhor)
 
-        //string cmd = "{" +
-        //    "\"object\" : \"users\"," +
-        //    "\"values\" : [{" +
-        //            (user.Id.ToString() == "" ? "" : ("\"id\" :" + user.Id.ToString() + ",")) + // optional (opcional)
-        //            "\"name\" :\"" + user.Name + "\"," +
-        //            "\"registration\" : \"" + user.Registration + "\"" +
-        //        "}]" +
-        //    "}";
+        string cmd = "{" +
+            "\"object\" : \"users\"," +
+            "\"values\" : [{" +
+                    (user.Id.ToString() == "" ? "" : ("\"id\" :" + user.Id.ToString() + ",")) + // optional (opcional)
+                    "\"name\" :\"" + user.Name + "\"," +
+                    "\"registration\" : \"" + user.Registration + "\"" +
+                "}]" +
+            "}";
 
-        string cmd = JsonSerializer.Serialize(user);
+        //string cmd = JsonSerializer.Serialize(user);
 
         msg = WebJsonService.Send(controlId.Url + "create_objects", cmd, controlId.Session);
       
@@ -192,7 +190,7 @@ namespace MonitorCtrlID.Src.Services
       return msg;
     }
 
-    public string ExcluirUser(ControlIdUserModel user)
+    public async Task<string> ExcluirUser(ControlIdUserModel user)
     {
       string msg;
       try

@@ -16,9 +16,9 @@ public partial class FrmPrincipal : Form
   //ControlIdModel _controlIdModel = new ControlIdModel();  
 
   //public FrmPrincipal(ControlIdModel controlId, ControlIdService service, ControlIdController controller)
-  public FrmPrincipal()
+  public FrmPrincipal(string connString)
   {
-    _contexto = new FBDBContexto();
+    _contexto = new FBDBContexto(connString);
     _controlID = new ControlIdModel();
 
 
@@ -96,17 +96,20 @@ public partial class FrmPrincipal : Form
     //
     AddMsg($"Importando Registros...");
     var msg = _controller.ImportarRegistros();
+    AddMsg($"{msg}");
   }
   private void IncluirUser()
   {
     //
     AddMsg($"Incluindo Usuários...");
     var msg = _controller.IncluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo);
+    AddMsg($"{msg}");
   }
   private void ExcluirUser()
   {
     AddMsg($"Excluindo Usuários...");
     var msg = _controller.ExcluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo);
+    AddMsg($"{msg}");
   }
 
   private void AddMsg(string msg)

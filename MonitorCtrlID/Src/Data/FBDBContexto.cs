@@ -7,16 +7,32 @@ namespace MonitorCtrlID.Src.Data;
 
 public partial class FBDBContexto : DbContext
 {
-    public FBDBContexto()
-    {
-    }
+  //public FBDBContexto()
+  //{
+  //}
 
-    public FBDBContexto(DbContextOptions<FBDBContexto> options)
+  private readonly string _connectionString;
+
+  public FBDBContexto(string connectionString)
+  {
+    _connectionString = connectionString;
+  }
+
+
+  public FBDBContexto(DbContextOptions<FBDBContexto> options)
         : base(options)
     {
     }
 
-    public virtual DbSet<Acessoscancela> Acessoscancelas { get; set; }
+  protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+  {
+    if (!optionsBuilder.IsConfigured)
+    {
+      optionsBuilder.UseFirebird(_connectionString);
+    }
+  }
+
+  public virtual DbSet<Acessoscancela> Acessoscancelas { get; set; }
 
     public virtual DbSet<Antena> Antenas { get; set; }
 
@@ -152,9 +168,9 @@ public partial class FBDBContexto : DbContext
 
     public virtual DbSet<Veiculosunidade> Veiculosunidades { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseFirebird("User=SYSDBA;Password=masterkey;Database=D:\\Ronaldo\\Projetos\\Base\\Acesso\\Aluminio\\baseAluminio.fdb;DataSource=localhost;Port=3050;Dialect=3;Charset=UTF8;");
+//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+//        => optionsBuilder.UseFirebird("User=SYSDBA;Password=masterkey;Database=D:\\Ronaldo\\Projetos\\Base\\Acesso\\Aluminio\\baseAluminio.fdb;DataSource=localhost;Port=3050;Dialect=3;Charset=UTF8;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
