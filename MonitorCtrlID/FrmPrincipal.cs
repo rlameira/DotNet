@@ -98,6 +98,12 @@ public partial class FrmPrincipal : Form
     AddMsg($"Importando Registros...");
     var msg = _controller.ImportarRegistros();
     AddMsg($"{msg}");
+
+    if (msg.Contains("Invalid session"))
+    {
+      Conecta();
+    }
+
   }
   private async void IncluirUser()
   {
