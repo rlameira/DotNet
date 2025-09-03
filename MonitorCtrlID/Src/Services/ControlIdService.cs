@@ -1,12 +1,7 @@
-﻿using Microsoft.VisualBasic.Logging;
-using MonitorCtrlID.src.Models;
+﻿using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.ControlId.Model;
 using MonitorCtrlID.Src.Data;
-using System.Data;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using System.Windows.Forms;
 using static MonitorCtrlID.Src.ControlId.IDAccess;
 
 namespace MonitorCtrlID.Src.Services

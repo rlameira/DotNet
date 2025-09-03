@@ -23,6 +23,7 @@ public partial class FrmPrincipal : Form
     _controlID = new ControlIdModel();
 
     _controlID.Codigo = Convert.ToInt32(ConfigurationManager.AppSettings["DeviceCode"]);
+    _controlID.Name = ConfigurationManager.AppSettings["DeviceName"];
     _controlID.Ip = ConfigurationManager.AppSettings["DeviceIp"];
     _controlID.Porta = Convert.ToInt32(ConfigurationManager.AppSettings["DevicePorta"]);
     _controlID.SSL = (ConfigurationManager.AppSettings["DeviceSSL"] == "SIM");
@@ -54,7 +55,7 @@ public partial class FrmPrincipal : Form
   {
     string tempoTimer = ConfigurationManager.AppSettings["TempoTimer"];
 
-    stsLblIP.Text = $"{_controlID.Ip}:{_controlID.Porta} ({_controlID.EntradaSaida})";
+    stsLblIP.Text = $"{_controlID.Ip}:{_controlID.Porta} ({_controlID.EntradaSaida}) {_controlID.Name}";
 
     AddMsg($"Conectando...");
     //var _controller = new ControlIdController(controlID, service);
