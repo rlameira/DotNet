@@ -115,6 +115,8 @@ namespace MonitorCtrlID.Src.Services
 
         user.Id = operacao.CodPessoa;
         user.Name = operacao.Nome != null ? operacao.Nome : "";
+        user.begin_time = 1735689600;
+        user.end_time = 2082758340;
 
         msg = await IncluirUser(user);
 
@@ -137,6 +139,8 @@ namespace MonitorCtrlID.Src.Services
 
         user.Id = operacao.CodPessoa;
         user.Name = operacao.Nome != null ? operacao.Nome : "";
+        user.begin_time = 1735689600;
+        user.end_time = 2082758340;
 
         msg = await ExcluirUser(user);
 
@@ -159,9 +163,12 @@ namespace MonitorCtrlID.Src.Services
         string cmd = "{" +
             "\"object\" : \"users\"," +
             "\"values\" : [{" +
-                    (user.Id.ToString() == "" ? "" : ("\"id\" :" + user.Id.ToString() + ",")) + // optional (opcional)
-                    "\"name\" :\"" + user.Name + "\"," +
-                    "\"registration\" : \"" + user.Registration + "\"" +
+                    (user.Id.ToString() == "" ? "" : (
+                    $"\"id\" : {user.Id},")) + // optional (opcional)
+                    $"\"name\" :\"{user.Name}\"," +
+                    $"\"registration\" : \"{user.Registration}\", " +
+                    $"\"begin_time\" : {user.begin_time}," +
+                    $"\"end_time\" :{user.end_time}" +
                 "}]" +
             "}";
 

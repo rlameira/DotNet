@@ -1,4 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿using Microsoft.VisualBasic.ApplicationServices;
+using MonitorCtrlID.Src.ControlId.Model;
+using System.Runtime.Serialization;
 
 namespace MonitorCtrlID.Src.ControlId
 {
@@ -8,27 +10,23 @@ namespace MonitorCtrlID.Src.ControlId
     public class ResultList
     {
       [DataMember(EmitDefaultValue = false)] // Os EmitDefaultValue são necessários mais para postar informações omitindo itens não definidos
-      public User[] users;
+      //public User[] users;
+      public ControlIdUserModel[] users;
 
       [DataMember(EmitDefaultValue = false)]
       public Access_Logs[] access_logs;
     }
 
-    [DataContract]
-    public class User
-    {
-      [DataMember(EmitDefaultValue = false)]
-      public long id; // Atenção no iDAccess todos os numeros são sempre long (64bits)
-      [DataMember(EmitDefaultValue = false)]
-      public string name;
-      [DataMember(EmitDefaultValue = false)]
-      public string registration;
-      // Já que neste exemplo não irei usar, vou remover, o que no DataContractJsonSerializer, não interfere em nada, pois ele só processa o que estiver definido
-      //[DataMember(EmitDefaultValue = false)]
-      //public string password;
-      //[DataMember(EmitDefaultValue = false)]
-      //public string salt;
-    }
+    //[DataContract]
+    //public class User
+    //{
+    //  [DataMember(EmitDefaultValue = false)]
+    //  public long id; // Atenção no iDAccess todos os numeros são sempre long (64bits)
+    //  [DataMember(EmitDefaultValue = false)]
+    //  public string name;
+    //  [DataMember(EmitDefaultValue = false)]
+    //  public string registration;
+    //}
 
     [DataContract]
     public class Access_Logs
