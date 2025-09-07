@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MonitorCtrlID.src.Models;
+﻿using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.Data;
 using MonitorCtrlID.Src.Interfaces;
-using System.Windows.Forms;
 
 namespace MonitorCtrlID.Src.Services
 {
@@ -53,28 +51,48 @@ namespace MonitorCtrlID.Src.Services
     //  contexto.SaveChanges();
     //}
 
-    public void Add(Registrosativo entity)
+    public void Add(Registrosativo entity, bool saveChances = true)
     {
-      var registros = contexto.Registrosativos
-        .Where(r => r.Data == entity.Data
-           && r.Hora == entity.Hora
-           && r.Codequipamento == entity.Codequipamento
-           && r.Codpessoavisitante == entity.Codpessoavisitante)
-        .ToList();
-
-      if (registros.Count == 0)
+      try
       {
-        contexto.Registrosativos.Add(entity);
-        contexto.SaveChanges();
+        var lstRegistros = contexto.Registrosativos
+          .Where(r => r.Data == entity.Data
+             && r.Hora == entity.Hora
+             && r.Codequipamento == entity.Codequipamento
+             && r.Codpessoavisitante == entity.Codpessoavisitante)
+          .ToList();
+        
+        if (lstRegistros.Count == 0)
+        {
+          try
+          {
+            contexto.Registrosativos.Add(entity);
+            Thread.Sleep(100);
+            if (saveChances)
+            {
+              contexto.SaveChanges();
+            }
+          }
+          catch (Exception ex)
+          {
+            // Aqui você captura qualquer problema (concorrência, conexão, etc.)
+            //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        // Aqui você captura qualquer problema (concorrência, conexão, etc.)
+        //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
       }
     }
 
-    void IServiceBase<Registrosativo>.Update(Registrosativo entity)
+    void IServiceBase<Registrosativo>.Update(Registrosativo entity, bool saveChanges = true)
     {
       throw new NotImplementedException();
     }
 
-    void IServiceBase<Registrosativo>.Delete(Registrosativo entity)
+    void IServiceBase<Registrosativo>.Delete(Registrosativo entity, bool saveChanges = true)
     {
       throw new NotImplementedException();
     }

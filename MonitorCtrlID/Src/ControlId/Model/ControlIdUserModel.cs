@@ -11,7 +11,7 @@ namespace MonitorCtrlID.Src.ControlId.Model
 //public string Registration { get; set; } = "";
 //public string password { get; set; } = "";
 // Atenção no iDAccess todos os numeros são sempre long (64bits)
-[DataMember(EmitDefaultValue = false)]
+    [DataMember(EmitDefaultValue = false)]
     public long Id { get; set; }
     [DataMember(EmitDefaultValue = false)]
     public string Name { get; set; }

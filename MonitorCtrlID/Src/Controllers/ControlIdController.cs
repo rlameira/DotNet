@@ -19,20 +19,20 @@ namespace MonitorCtrlID.Src.Controllers
       return _service.Conectar();
     }
 
-    public string ImportarRegistros()
+    public async Task<string> ImportarRegistros(bool saveChanges = true)
     {
-      return _service.ImportarRegistros(_controlId);
+      return await _service.ImportarRegistros(_controlId, saveChanges);
     }
 
-    public async Task<string> IncluirUsuariosOperacao(int top)
+    public async Task<string> IncluirUsuariosOperacao(int top, bool saveChanges = true)
     {
-      var msg = await _service.IncluirUsuariosOperacao(top);
+      var msg = await _service.IncluirUsuariosOperacao(top, saveChanges);
       return msg;
     }
 
-    public async Task<string> ExcluirUsuariosOperacao(int top)
+    public async Task<string> ExcluirUsuariosOperacao(int top, bool saveChanges = true)
     {
-      var msg = await _service.ExcluirUsuariosOperacao(top);
+      var msg = await _service.ExcluirUsuariosOperacao(top, saveChanges);
       return msg;
     }
 

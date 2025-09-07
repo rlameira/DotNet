@@ -3,7 +3,7 @@ using MonitorCtrlID.Src.Interfaces;
 
 namespace MonitorCtrlID.src.Services
 {
-  public class ServiceBase<T>(FBDBContexto _context) : IServiceBase<T> where T : class
+  public class ServiceBase<T>(FBDBContexto _contexto) : IServiceBase<T> where T : class
   {
     //protected readonly FBDBContexto _context;
 
@@ -14,7 +14,7 @@ namespace MonitorCtrlID.src.Services
 
     public virtual List<T> GetAll(int top = 0)
     {
-      var query = _context.Set<T>().AsQueryable();
+      var query = _contexto.Set<T>().AsQueryable();
 
       if (top > 0)
         query = query.Take(top);
@@ -25,25 +25,58 @@ namespace MonitorCtrlID.src.Services
 
     public virtual T? Get(params object[] keys)
     {
-      return _context.Set<T>().Find(keys);
+      return _contexto.Set<T>().Find(keys);
     }
 
-    public virtual void Add(T entity)
+    public virtual void Add(T entity,bool saveChanges = true)
     {
-      _context.Set<T>().Add(entity);
-      _context.SaveChanges();
+      try
+      {
+        _contexto.Set<T>().Add(entity);
+        if (saveChanges)
+        {
+          _contexto.SaveChanges();
+        }
+      }
+      catch (Exception ex)
+      {
+        // Aqui você captura qualquer problema (concorrência, conexão, etc.)
+        //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
+      }
     }
 
-    public virtual void Update(T entity)
+    public virtual void Update(T entity, bool saveChanges = true)
     {
-      _context.Set<T>().Update(entity);
-      _context.SaveChanges();
+      try
+      {
+        _contexto.Set<T>().Update(entity);
+        if (saveChanges)
+        {
+          _contexto.SaveChanges();
+        }
+      }
+      catch (Exception ex)
+      {
+        // Aqui você captura qualquer problema (concorrência, conexão, etc.)
+        //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
+      }
     }
 
-    public virtual void Delete(T entity)
+    public virtual void Delete(T entity, bool saveChanges = true)
     {
-      _context.Set<T>().Remove(entity);
-      _context.SaveChanges();
+      try
+      {
+        _contexto.Set<T>().Remove(entity);
+        if (saveChanges)
+        {
+          _contexto.SaveChanges();
+        }
+      }
+      catch (Exception ex)
+      {
+        // Aqui você captura qualquer problema (concorrência, conexão, etc.)
+        //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
+      }
     }
   }
 }

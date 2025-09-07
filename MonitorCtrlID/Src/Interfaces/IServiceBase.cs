@@ -6,9 +6,9 @@ namespace MonitorCtrlID.Src.Interfaces
   {
     List<T> GetAll(int top = 0);
     T? Get(params object[] keys);
-    void Add(T entity);
-    void Update(T entity);
-    void Delete(T entity);
+    void Add(T entity, bool saveChanges = true);
+    void Update(T entity, bool saveChanges = true);
+    void Delete(T entity, bool saveChanges = true);
   }
 }
 

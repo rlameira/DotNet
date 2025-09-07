@@ -9,19 +9,19 @@ namespace MonitorCtrlID.Src.Interfaces
     List<Operacao> GetUltimasOperacoes(int codEquipamento = 0, int top = 5);
   }
 
-  public class OperacaoService(FBDBContexto context) : IServiceBase<Operacao>, IOperacaoService
+  public class OperacaoService(FBDBContexto contexto) : IServiceBase<Operacao>, IOperacaoService
   {
     //protected readonly FBDBContexto _context;
     //public OperacaoService(FBDBContexto context) {
     //  _context = context;
     //}
 
-    public void Add(Operacao entity)
+    public void Add(Operacao entity, bool saveChanges = true)
     {
       throw new NotImplementedException();
     }
 
-    public void Delete(Operacao entity)
+    public void Delete(Operacao entity, bool saveChanges = true)
     {
       throw new NotImplementedException();
     }
@@ -50,7 +50,7 @@ namespace MonitorCtrlID.Src.Interfaces
       throw new NotImplementedException();
     }
 
-    public void Update(Operacao entity)
+    public void Update(Operacao entity, bool saveChanges = true)
     {
       throw new NotImplementedException();
     }

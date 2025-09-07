@@ -4,6 +4,7 @@ using MonitorCtrlID.Src.Controllers;
 using MonitorCtrlID.Src.Data;
 using MonitorCtrlID.Src.Services;
 using System.Configuration;
+using System.Threading.Tasks;
 
 namespace MonitorCtrlID;
 
@@ -30,9 +31,12 @@ public partial class FrmPrincipal : Form
     _controlID.User = ConfigurationManager.AppSettings["DeviceUser"];
     _controlID.Password = ConfigurationManager.AppSettings["DevicePassword"];
     _controlID.EntradaSaida = ConfigurationManager.AppSettings["DeviceEntradaSaida"];
-    _controlID.ImportaAcessos = (ConfigurationManager.AppSettings["ImportaAcessos"] == "SIM");
     _controlID.PastaDeFotos = ConfigurationManager.AppSettings["PastaDeFotos"];
     _controlID.NumeroUsuariosPorCiclo = Convert.ToInt32(ConfigurationManager.AppSettings["NumeroUsersPorCiclo"]);
+
+    _controlID.ImportaAcessos = (ConfigurationManager.AppSettings["ImportaAcessos"] == "SIM");
+    _controlID.LiberaAcademia = (ConfigurationManager.AppSettings["LiberaAcademia"] == "SIM");
+    _controlID.LiberaClube = (ConfigurationManager.AppSettings["LiberaClube"] == "SIM");
 
     _service = new ControlIdService(_controlID, _contexto);
     _controller = new ControlIdController(_controlID, _service);
@@ -64,7 +68,7 @@ public partial class FrmPrincipal : Form
     AddMsg($"Conectar: {msg}");
     StsLblSession.Text = _controlID.Session;
 
-    //if (msg.StartsWith("OK"))
+    if (msg.StartsWith("OK"))
     {
       tmrFluxo.Interval = Convert.ToInt32(tempoTimer);
 
@@ -75,49 +79,96 @@ public partial class FrmPrincipal : Form
     }
   }
 
-  private void Fluxo()
+  private async Task Fluxo()
   {
     tmrFluxo.Enabled = false;
     txtBxMesagem.Clear();
     AddMsg("Fluxo");
 
+    var saveChanges = true;
     if (_controlID.ImportaAcessos)
     {
-      ImportarRegistros();
+      await ImportarRegistros(saveChanges);
+      Thread.Sleep(100);
     }
     //
-    IncluirUser();
+    await IncluirUser(saveChanges);
     //
-    ExcluirUser();
+    await ExcluirUser(saveChanges);
+    
+
+    //if (_controlID.LiberaClube)
+    //{
+    //  LiberaClube();
+    //}
+
+    //if (_controlID.LiberaAcademia)
+    //{
+    //  LiberaAcademia();
+    //}
+
+    try
+    {
+      _contexto.SaveChanges();
+      Thread.Sleep(100);
+    }
+    catch (Exception ex) { 
+      //
+    }
+
+    
+    //
+
     tmrFluxo.Enabled = true;
   }
 
+  //private void LiberaAcademia()
+  //{
+  //  var msg = "Liberando Acesso a Academia...";
+  //  AddMsg($"{msg}");
+  //  msg = _controller.LiberaAcademia();
+  //  AddMsg($"{msg}");
+  //}
 
-  private void ImportarRegistros()
+  //private void LiberaClube()
+  //{
+  //  var msg = "Liberando Acesso ao Clube...";
+  //  AddMsg($"{msg}");
+  //  msg = _controller.LiberaClube();
+  //  AddMsg($"{msg}");
+  //}
+
+  private async Task<string> ImportarRegistros(bool saveChanges = true)
   {
     //
     AddMsg($"Importando Registros...");
-    var msg = _controller.ImportarRegistros();
+    var msg = await _controller.ImportarRegistros(saveChanges);
     AddMsg($"{msg}");
 
     if (msg.Contains("Invalid session"))
     {
       Conecta();
     }
-
+    return msg;
   }
-  private async void IncluirUser()
+  private async Task<string> IncluirUser(bool saveChanges = true)
   {
     //
     AddMsg($"Incluindo Usuários...");
-    var msg = await _controller.IncluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo);
+    
+    var msg = await _controller.IncluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo, saveChanges);
     AddMsg($"{msg}");
+    Thread.Sleep(100);
+    return msg;
   }
-  private async void ExcluirUser()
+  private async Task<string> ExcluirUser(bool saveChanges = true)
   {
     AddMsg($"Excluindo Usuários...");
-    var msg = await _controller.ExcluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo);
+    var msg = await _controller.ExcluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo, saveChanges);
     AddMsg($"{msg}");
+    Thread.Sleep(100);
+
+    return msg;
   }
 
   private void AddMsg(string msg)
@@ -141,10 +192,10 @@ public partial class FrmPrincipal : Form
     //registros.Inoutstate = 0;
     //registros.Evento = 0;
 
-
     //RegistrosAtivosService registrosService = new RegistrosAtivosService(_contexto);
     //registrosService.Add(registros);
 
     Conecta();
+    //Fluxo();
   }
 }

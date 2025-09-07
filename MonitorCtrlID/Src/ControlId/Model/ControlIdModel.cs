@@ -16,6 +16,8 @@
     public string PastaDeFotos { get; set; } = "";
     public int NumeroUsuariosPorCiclo { get; set; } = 5;
     public DateTime UltimoRegistro { get; set; }
+    public bool LiberaAcademia { get; set; } = false;
+    public bool LiberaClube { get; set; } = false;
 
   }
 }

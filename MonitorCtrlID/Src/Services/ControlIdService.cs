@@ -1,7 +1,10 @@
-﻿using MonitorCtrlID.src.Models;
+﻿using Microsoft.VisualBasic.ApplicationServices;
+using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.ControlId.Model;
 using MonitorCtrlID.Src.Data;
 using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Threading;
 using static MonitorCtrlID.Src.ControlId.IDAccess;
 
 namespace MonitorCtrlID.Src.Services
@@ -12,9 +15,10 @@ namespace MonitorCtrlID.Src.Services
 
     protected readonly ControlIdModel controlId;
     protected readonly FBDBContexto _contexto;
+
     protected readonly OperacaoService _operacaoService;
     protected readonly RegistrosAtivosService _registrosService;
-    protected readonly OperacaoService _operaceosService;
+    protected readonly PessoaService _pessooaService;
 
     public ControlIdService(ControlIdModel controlIdModel, FBDBContexto contexto)
     {
@@ -22,8 +26,7 @@ namespace MonitorCtrlID.Src.Services
       _contexto = contexto;
       _operacaoService = new OperacaoService(_contexto);
       _registrosService = new RegistrosAtivosService(_contexto);
-
-      _operaceosService = new OperacaoService(_contexto);
+      _pessooaService = new PessoaService(_contexto);
     }
 
     public string Conectar()
@@ -105,10 +108,11 @@ namespace MonitorCtrlID.Src.Services
       return msg;
     }
 
-    public async Task<string> IncluirUsuariosOperacao(int top)
+    public async Task<string> IncluirUsuariosOperacao(int top,bool saveChanges = true)
     {
+      var usuarios = "";
       string msg = "";
-      var operacoes = _operaceosService.GetInclusoes(controlId.Codigo, top);
+      var operacoes = _operacaoService.GetInclusoes(controlId.Codigo, top);
       foreach (var operacao in operacoes)
       {
         ControlIdUserModel user = new ControlIdUserModel();
@@ -118,21 +122,42 @@ namespace MonitorCtrlID.Src.Services
         user.begin_time = 1735689600;
         user.end_time = 2082758340;
 
+        usuarios = usuarios + "," + user.Id.ToString();
+
+        try
+        {
+          msg = await ExcluirUser(user);
+        }
+        catch (Exception ex)
+        {
+          msg = $"EROR: {ex.Message}";
+        }
+
         msg = await IncluirUser(user);
 
         if (msg.StartsWith("OK"))
         {
           msg = await AlterarUser(user);
-          _operacaoService.ExcluirOperacao(operacao);
-        }       
+          //_operacaoService.ExcluirOperacao(operacao, saveChanges);
+        }
+
+        //Libera departamento
+        UserGroupsModel userGroup = new UserGroupsModel();
+        userGroup.user_id = operacao.CodPessoa;
+        userGroup.group_id = 1;
+        LiberaUsuarioAoDepartamento(userGroup);
       }
-      return  msg;
+
+      _operacaoService.RemoveOperacoes(operacoes, true);
+      Thread.Sleep(100);
+      return msg + "(" + usuarios + ")";
+      
     }
 
-    public async Task<string> ExcluirUsuariosOperacao(int top)
+    public async Task<string> ExcluirUsuariosOperacao(int top, bool saveChanges = true)
     {
       string msg = "";
-      var operacoes = _operaceosService.GetExclusoes(controlId.Codigo, top);
+      var operacoes = _operacaoService.GetExclusoes(controlId.Codigo, top);
       foreach (var operacao in operacoes)
       {
         ControlIdUserModel user = new ControlIdUserModel();
@@ -146,11 +171,37 @@ namespace MonitorCtrlID.Src.Services
 
         if (msg.StartsWith("OK"))
         {
-          _operacaoService.ExcluirOperacao(operacao);
+          //_operacaoService.ExcluirOperacao(operacao, saveChanges);
         }
       }
+      _operacaoService.RemoveOperacoes(operacoes, true);
+      Thread.Sleep(100);
       return msg;
     }
+
+
+    //public async Task<string> AlterUsuariosOperacao(int top)
+    //{
+    //  string msg = "";
+    //  var operacoes = _operaceosService.GetAlteracoes(controlId.Codigo, top);
+    //  foreach (var operacao in operacoes)
+    //  {
+    //    ControlIdUserModel user = new ControlIdUserModel();
+
+    //    user.Id = operacao.CodPessoa;
+    //    user.Name = operacao.Nome != null ? operacao.Nome : "";
+    //    user.begin_time = 1735689600;
+    //    user.end_time = 2082758340;
+
+    //    msg = await AlterUser(user);
+
+    //    if (msg.StartsWith("OK"))
+    //    {
+    //      _operacaoService.ExcluirOperacao(operacao);
+    //    }
+    //  }
+    //  return msg;
+    //}
 
     public async Task<string> IncluirUser(ControlIdUserModel user)
     {
@@ -190,6 +241,67 @@ namespace MonitorCtrlID.Src.Services
 
       return msg;
     }
+
+
+    public async Task<string> AlterUser(ControlIdUserModel user)
+    {
+      string msg = "";
+      try
+      {
+        string cmd = "{" +
+          "\"object\" : \"users\"," +
+            $"\"where\":{{\"users\":{{\"id\":[{user.Id}]}}}}," +
+            "\"values\" : [{" +
+                    $"\"name\" :\"{user.Name}\"," +
+                    $"\"registration\" : \"{user.Registration}\"," +
+                    $"\"begin_time\" : {user.begin_time}," +
+                    $"\"end_time\" :{user.end_time}" +
+                    "}]" +
+        "}";
+        //AddLog(WebJson.Send(urlDevice + "modify_objects", cmd, session));
+        msg = WebJsonService.Send(controlId.Url + "modify_objects", cmd, controlId.Session);
+        msg = $"OK: {msg}";
+      }
+      catch (Exception ex)
+      {
+        msg = $"ERROR: {ex.Message}";
+      }
+      return msg;
+    }
+
+
+    public async Task<string> AlterUserGroups(ControlIdUserModel user)
+    {
+      //user_groups
+      //{ "user_groups":[{ "user_id":3067,"group_id":1}]}
+
+      string msg = "";
+      try
+      {
+        string cmd = "{" +
+          "\"object\" : \"user_groups\"," +
+            "\"values\" : [{" +
+                    $"\"name\" :\"{user.Name}\"," +
+                    $"\"registration\" : \"{user.Registration}\"," +
+                    $"\"begin_time\" : {user.begin_time}," +
+                    $"\"end_time\" :{user.end_time}" +
+                    "}]" +
+        "}";
+
+
+
+
+        //AddLog(WebJson.Send(urlDevice + "modify_objects", cmd, session));
+        msg = WebJsonService.Send(controlId.Url + "modify_objects", cmd, controlId.Session);
+        msg = $"OK: {msg}";
+      }
+      catch (Exception ex)
+      {
+        msg = $"ERROR: {ex.Message}";
+      }
+      return msg;
+    }
+
 
     public async Task<string> ExcluirUser(ControlIdUserModel user)
     {
@@ -267,7 +379,7 @@ namespace MonitorCtrlID.Src.Services
       return msg;
     }
 
-    public string ImportarRegistros(ControlIdModel controlId)
+    public async Task<string> ImportarRegistros(ControlIdModel controlId, bool saveChances = true)
     {
       var logsProcessados = 0;
       var msg = "";
@@ -299,7 +411,7 @@ namespace MonitorCtrlID.Src.Services
             registrosativo.Inoutstate = 0;
             registrosativo.Evento = 0;
 
-            _registrosService.Add(registrosativo);
+            _registrosService.Add(registrosativo, saveChances);
             logsProcessados++;
           }
         }
@@ -309,6 +421,36 @@ namespace MonitorCtrlID.Src.Services
       catch (Exception ex)
       {
         msg = $"ERRO: {ex.Message}";
+      }
+      return msg;
+    }
+
+    public string LiberaUsuarioAoDepartamento(UserGroupsModel userGroup)
+    {
+      string msg = "";
+      try
+      {
+        //var pessoas = _pessooaService.GetPessasAcademia();
+        var listUserGroups = new List<UserGroupsModel>();
+        userGroup.group_id = 1;
+        listUserGroups.Add(userGroup);
+
+        var payload = new
+        {
+          @object = "user_groups",
+          values = listUserGroups
+        };
+
+        string cmd = JsonSerializer.Serialize(payload);
+
+        //msg = WebJsonService.Send(controlId.Url + "modify_objects", cmd, controlId.Session);
+        msg = WebJsonService.Send(controlId.Url + "create_objects", cmd, controlId.Session);
+        msg = $"OK: {msg}";
+
+      }
+      catch (Exception ex)
+      {
+        msg = $"ERROR: {ex.Message}";
       }
       return msg;
     }
