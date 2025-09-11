@@ -34,6 +34,9 @@ partial class FrmPrincipal
     statusStrip1 = new StatusStrip();
     stsLblIP = new ToolStripStatusLabel();
     StsLblSession = new ToolStripStatusLabel();
+    stsLblHoraAbertura = new ToolStripStatusLabel();
+    stsLblHoraConexao = new ToolStripStatusLabel();
+    stsLblReconectar = new ToolStripStatusLabel();
     tmrFluxo = new System.Windows.Forms.Timer(components);
     panel1 = new Panel();
     pictureBox1 = new PictureBox();
@@ -49,7 +52,7 @@ partial class FrmPrincipal
     grpBoxInformacao.Dock = DockStyle.Top;
     grpBoxInformacao.Location = new Point(0, 0);
     grpBoxInformacao.Name = "grpBoxInformacao";
-    grpBoxInformacao.Size = new Size(524, 294);
+    grpBoxInformacao.Size = new Size(604, 294);
     grpBoxInformacao.TabIndex = 0;
     grpBoxInformacao.TabStop = false;
     grpBoxInformacao.Text = "Informação";
@@ -60,30 +63,52 @@ partial class FrmPrincipal
     txtBxMesagem.Location = new Point(3, 19);
     txtBxMesagem.Multiline = true;
     txtBxMesagem.Name = "txtBxMesagem";
-    txtBxMesagem.Size = new Size(518, 272);
+    txtBxMesagem.Size = new Size(598, 272);
     txtBxMesagem.TabIndex = 0;
     // 
     // statusStrip1
     // 
-    statusStrip1.Items.AddRange(new ToolStripItem[] { stsLblIP, StsLblSession });
+    statusStrip1.Items.AddRange(new ToolStripItem[] { stsLblIP, StsLblSession, stsLblHoraAbertura, stsLblHoraConexao, stsLblReconectar });
     statusStrip1.Location = new Point(0, 539);
     statusStrip1.Name = "statusStrip1";
-    statusStrip1.Size = new Size(524, 22);
+    statusStrip1.Size = new Size(604, 22);
     statusStrip1.TabIndex = 1;
     statusStrip1.Text = "statusStrip1";
     statusStrip1.ItemClicked += statusStrip1_ItemClicked;
     // 
     // stsLblIP
     // 
+    stsLblIP.Font = new Font("Segoe UI", 8.25F);
     stsLblIP.Name = "stsLblIP";
-    stsLblIP.Size = new Size(118, 17);
+    stsLblIP.Size = new Size(117, 17);
     stsLblIP.Text = "toolStripStatusLabel1";
     // 
     // StsLblSession
     // 
+    StsLblSession.Font = new Font("Segoe UI", 8.25F);
     StsLblSession.Name = "StsLblSession";
     StsLblSession.Size = new Size(49, 17);
     StsLblSession.Text = "Session:";
+    // 
+    // stsLblHoraAbertura
+    // 
+    stsLblHoraAbertura.Font = new Font("Segoe UI", 8.25F);
+    stsLblHoraAbertura.Name = "stsLblHoraAbertura";
+    stsLblHoraAbertura.Size = new Size(96, 17);
+    stsLblHoraAbertura.Text = "Hora de Abertura";
+    // 
+    // stsLblHoraConexao
+    // 
+    stsLblHoraConexao.Font = new Font("Segoe UI", 8.25F);
+    stsLblHoraConexao.Name = "stsLblHoraConexao";
+    stsLblHoraConexao.Size = new Size(96, 17);
+    stsLblHoraConexao.Text = "Hora de Conexao";
+    // 
+    // stsLblReconectar
+    // 
+    stsLblReconectar.Name = "stsLblReconectar";
+    stsLblReconectar.Size = new Size(13, 17);
+    stsLblReconectar.Text = "0";
     // 
     // tmrFluxo
     // 
@@ -96,18 +121,19 @@ partial class FrmPrincipal
     panel1.Dock = DockStyle.Bottom;
     panel1.Location = new Point(0, 294);
     panel1.Name = "panel1";
-    panel1.Size = new Size(524, 245);
+    panel1.Size = new Size(604, 245);
     panel1.TabIndex = 2;
     // 
     // pictureBox1
     // 
-    pictureBox1.BackgroundImage = Properties.Resources.SisPlenaAcessoMonitor_530;
+    pictureBox1.BorderStyle = BorderStyle.FixedSingle;
     pictureBox1.Dock = DockStyle.Bottom;
+    pictureBox1.Image = Properties.Resources.SisPlenaAcessoMonitor_530;
     pictureBox1.InitialImage = null;
     pictureBox1.Location = new Point(0, 0);
     pictureBox1.Name = "pictureBox1";
-    pictureBox1.Size = new Size(524, 245);
-    pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
+    pictureBox1.Size = new Size(604, 245);
+    pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
     pictureBox1.TabIndex = 3;
     pictureBox1.TabStop = false;
     // 
@@ -115,7 +141,7 @@ partial class FrmPrincipal
     // 
     AutoScaleDimensions = new SizeF(7F, 15F);
     AutoScaleMode = AutoScaleMode.Font;
-    ClientSize = new Size(524, 561);
+    ClientSize = new Size(604, 561);
     Controls.Add(grpBoxInformacao);
     Controls.Add(panel1);
     Controls.Add(statusStrip1);
@@ -142,4 +168,7 @@ partial class FrmPrincipal
   private TextBox txtBxMesagem;
   private Panel panel1;
   private PictureBox pictureBox1;
+  private ToolStripStatusLabel stsLblHoraAbertura;
+  private ToolStripStatusLabel stsLblHoraConexao;
+  private ToolStripStatusLabel stsLblReconectar;
 }

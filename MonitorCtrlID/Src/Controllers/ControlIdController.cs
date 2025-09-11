@@ -1,5 +1,6 @@
-﻿using FirebirdSql.Data.Services;
-using MonitorCtrlID.Src.ControlId.Model;
+﻿using MonitorCtrlID.Src.ControlId.Model;
+using MonitorCtrlID.Src.Middleware;
+using MonitorCtrlID.Src.Models;
 using MonitorCtrlID.Src.Services;
 
 namespace MonitorCtrlID.Src.Controllers
@@ -16,28 +17,40 @@ namespace MonitorCtrlID.Src.Controllers
     }
     public string Conectar()
     {
+      Logger.MesageLog("Controller Conectar", 1);
       return _service.Conectar();
+    }
+
+
+    public string Desconectar()
+    {
+      Logger.MesageLog("Controller Desconectar", 1);
+      return _service.Desconectar();
     }
 
     public async Task<string> ImportarRegistros(bool saveChanges = true)
     {
+      Logger.MesageLog("ImportarRegistros controller", 9);
       return await _service.ImportarRegistros(_controlId, saveChanges);
     }
 
-    public async Task<string> IncluirUsuariosOperacao(int top, bool saveChanges = true)
+    public async Task<List<PesssoaEquipamentoModel>> IncluirUsuariosOperacao(int top, bool saveChanges = true)
     {
-      var msg = await _service.IncluirUsuariosOperacao(top, saveChanges);
-      return msg;
+      Logger.MesageLog("Controller IncluirUsuariosOperacao", 1);
+      var listPessoasEquip = await _service.IncluirUsuariosOperacao(top, saveChanges);
+      return listPessoasEquip;
     }
 
     public async Task<string> ExcluirUsuariosOperacao(int top, bool saveChanges = true)
     {
+      Logger.MesageLog("Controller ExcluirUsuariosOperacao", 1);
       var msg = await _service.ExcluirUsuariosOperacao(top, saveChanges);
       return msg;
     }
 
     public string AjustarDataEHora(DateTime dt)
     {
+      Logger.MesageLog("Controller AjustarDataEHora", 1);
       return _service.AjustarDataEHora(dt);
     }
   }

@@ -2,9 +2,12 @@
 using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.ControlId.Model;
 using MonitorCtrlID.Src.Data;
+using MonitorCtrlID.Src.Middleware;
+using MonitorCtrlID.Src.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using static MonitorCtrlID.Src.ControlId.IDAccess;
 
 namespace MonitorCtrlID.Src.Services
@@ -57,6 +60,17 @@ namespace MonitorCtrlID.Src.Services
         // (Veja uma outra forma mais robusta de como poderia ser feito um login com serialização de objetos JSON no projeto de "Controle Remoto" criando estruturas que são serializadas se transformando em strings)
         // https://github.com/controlid/iDAccess/blob/master/ControleRemoto-CS/idAccess.cs
 
+        //var payload = new
+        //{
+        //  login = controlId.User,
+        //  password = controlId.Password
+        //};
+
+        //string json = JsonSerializer.Serialize(payload);
+
+        //string response = WebJsonService.Send(controlId.Url + "login", json);
+
+
         string response = WebJsonService.Send(controlId.Url + "login", "{\"login\":\"" + controlId.User + "\",\"password\":\"" + controlId.Password + "\"}");
 
         // Simple method to get the session
@@ -79,6 +93,23 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
+        msg = $"EROR: {ex.Message}";
+      }
+      return msg;
+    }
+
+
+    public string Desconectar()
+    {
+      string msg;
+      try
+      {
+        msg = WebJsonService.Send2(controlId.Url + "logout", controlId.Session);
+      }
+      catch (Exception ex)
+      {
+        Logger.LogError(ex);
         msg = $"EROR: {ex.Message}";
       }
       return msg;
@@ -103,24 +134,29 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         msg = $"EROR: {ex.Message}";
       }
       return msg;
     }
 
-    public async Task<string> IncluirUsuariosOperacao(int top,bool saveChanges = true)
+    public async Task<List<PesssoaEquipamentoModel>> IncluirUsuariosOperacao(int top,bool saveChanges = true)
     {
+      List<PesssoaEquipamentoModel> pessoasOperacao =  new List<PesssoaEquipamentoModel>();
+
       var usuarios = "";
-      string msg = "";
+      
       var operacoes = _operacaoService.GetInclusoes(controlId.Codigo, top);
       foreach (var operacao in operacoes)
       {
+        string msg = "";
         ControlIdUserModel user = new ControlIdUserModel();
 
         user.Id = operacao.CodPessoa;
         user.Name = operacao.Nome != null ? operacao.Nome : "";
         user.begin_time = 1735689600;
         user.end_time = 2082758340;
+
 
         usuarios = usuarios + "," + user.Id.ToString();
 
@@ -130,6 +166,7 @@ namespace MonitorCtrlID.Src.Services
         }
         catch (Exception ex)
         {
+          Logger.LogError(ex);
           msg = $"EROR: {ex.Message}";
         }
 
@@ -137,9 +174,23 @@ namespace MonitorCtrlID.Src.Services
 
         if (msg.StartsWith("OK"))
         {
-          msg = await AlterarUser(user);
-          //_operacaoService.ExcluirOperacao(operacao, saveChanges);
+          try
+          {
+            msg = await AddFotoUser(user);
+          }
+          catch (Exception ex)
+          {
+            Logger.LogError(ex);
+            msg = $"EROR: {ex.Message}";
+          }
         }
+
+        pessoasOperacao.Add(new PesssoaEquipamentoModel
+        {
+          CodPessoa = operacao.CodPessoa,
+          Nome = operacao.Nome,
+          Msg = msg
+        });
 
         //Libera departamento
         UserGroupsModel userGroup = new UserGroupsModel();
@@ -148,10 +199,10 @@ namespace MonitorCtrlID.Src.Services
         LiberaUsuarioAoDepartamento(userGroup);
       }
 
-      _operacaoService.RemoveOperacoes(operacoes, true);
+      _operacaoService.RemoveOperacoes(operacoes, saveChanges);
       Thread.Sleep(100);
-      return msg + "(" + usuarios + ")";
-      
+      //return msg + "(" + usuarios + ")";
+      return pessoasOperacao;
     }
 
     public async Task<string> ExcluirUsuariosOperacao(int top, bool saveChanges = true)
@@ -174,7 +225,7 @@ namespace MonitorCtrlID.Src.Services
           //_operacaoService.ExcluirOperacao(operacao, saveChanges);
         }
       }
-      _operacaoService.RemoveOperacoes(operacoes, true);
+      _operacaoService.RemoveOperacoes(operacoes, saveChanges);
       Thread.Sleep(100);
       return msg;
     }
@@ -231,7 +282,8 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
-          msg = $"ERROR: {ex.Message}";
+        Logger.LogError(ex);
+        msg = $"ERROR: {ex.Message}";
       }
 
       if (msg.Contains("UNIQUE constraint failed"))
@@ -297,6 +349,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         msg = $"ERROR: {ex.Message}";
       }
       return msg;
@@ -314,12 +367,13 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         msg = $"EROR: {ex.Message}";
       }
       return msg;
     }
 
-    public async Task<string> AlterarUser(ControlIdUserModel user)
+    public async Task<string> AddFotoUser(ControlIdUserModel user)
     {
       string msg;
       try
@@ -330,17 +384,6 @@ namespace MonitorCtrlID.Src.Services
 
         if (!string.IsNullOrEmpty(fotoFilename) && File.Exists(fotoFilename))
         {
-
-          //string cmd = "{" +
-          //  "\"object\" : \"users\"," +
-          //  "\"where\":{\"users\":{\"id\":[" + id + "]}}," +
-          //  "\"values\" : {" +
-          //          "\"name\" :\"" + user.Name + "\"," +
-          //          "\"registration\" : \"" + user.Registration + "\"" +
-          //      "}" +
-          //  "}";
-
-          //msg = WebJsonService.Send(controlId.Url + "modify_objects", cmd, controlId.Session);
 
           string filePath = fotoFilename;
 
@@ -358,7 +401,7 @@ namespace MonitorCtrlID.Src.Services
           if (response.IsSuccessStatusCode)
           {
             await response.Content.ReadAsStringAsync();
-            msg = "Foto cadastrada com sucesso!";
+            msg = "Foto cadastrada.";
           }
           else
           {
@@ -374,6 +417,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         msg = $"ERROR: {ex.Message}";
       }
       return msg;
@@ -381,6 +425,8 @@ namespace MonitorCtrlID.Src.Services
 
     public async Task<string> ImportarRegistros(ControlIdModel controlId, bool saveChances = true)
     {
+      Logger.MesageLog("ImportarRegistros service",9);
+
       var logsProcessados = 0;
       var msg = "";
 
@@ -420,6 +466,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         msg = $"ERRO: {ex.Message}";
       }
       return msg;
@@ -450,6 +497,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         msg = $"ERROR: {ex.Message}";
       }
       return msg;

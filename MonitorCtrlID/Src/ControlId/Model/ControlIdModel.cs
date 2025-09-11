@@ -19,5 +19,9 @@
     public bool LiberaAcademia { get; set; } = false;
     public bool LiberaClube { get; set; } = false;
 
+    public int CiclosReconexao { get; set; } = 0;
+
+    
+
   }
 }

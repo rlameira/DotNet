@@ -1,6 +1,7 @@
 ﻿using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.Data;
 using MonitorCtrlID.Src.Interfaces;
+using MonitorCtrlID.Src.Middleware;
 
 namespace MonitorCtrlID.Src.Services
 {
@@ -57,6 +58,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         // Aqui você captura qualquer problema (concorrência, conexão, etc.)
         //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
       }
@@ -109,6 +111,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         // Aqui você captura qualquer problema (concorrência, conexão, etc.)
         //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
       }
@@ -127,6 +130,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         // Aqui você captura qualquer problema (concorrência, conexão, etc.)
         //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
       }
@@ -145,6 +149,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         // Aqui você captura qualquer problema (concorrência, conexão, etc.)
         //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
       }
@@ -163,6 +168,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
+        Logger.LogError(ex);
         // Aqui você captura qualquer problema (concorrência, conexão, etc.)
       }
     }

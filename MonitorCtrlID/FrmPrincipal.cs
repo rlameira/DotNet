@@ -2,9 +2,9 @@ using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.ControlId.Model;
 using MonitorCtrlID.Src.Controllers;
 using MonitorCtrlID.Src.Data;
+using MonitorCtrlID.Src.Middleware;
 using MonitorCtrlID.Src.Services;
 using System.Configuration;
-using System.Threading.Tasks;
 
 namespace MonitorCtrlID;
 
@@ -13,7 +13,7 @@ public partial class FrmPrincipal : Form
   readonly ControlIdModel _controlID;
   readonly FBDBContexto _contexto;
   readonly ControlIdService _service;
-  readonly ControlIdController _controller;  
+  readonly ControlIdController _controller;
 
   //ControlIdModel _controlIdModel = new ControlIdModel();  
 
@@ -42,11 +42,12 @@ public partial class FrmPrincipal : Form
     _controller = new ControlIdController(_controlID, _service);
 
     InitializeComponent();
+    //this.Name = _controlID.Name.Replace(" ", "");
+    this.Text = $"{_controlID.Name} {_controlID.Codigo}" ;
   }
 
   private void statusStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
   {
-
   }
 
   private void tmrFluxo_Tick(object sender, EventArgs e)
@@ -57,69 +58,89 @@ public partial class FrmPrincipal : Form
 
   private void Conecta()
   {
+    Logger.MesageLog("Conecta", 1);
+    stsLblHoraConexao.Text = $"Conexao: {DateTime.Now: dd/MM HH:mm}";
+    bool exibeDataEHora = false;
+    bool exibeHora = true;
+    //
+    _controlID.CiclosReconexao = Convert.ToInt32(ConfigurationManager.AppSettings["CiclosReconexao"]);
+    stsLblReconectar.Text = $"{_controlID.CiclosReconexao}";
+
     string tempoTimer = ConfigurationManager.AppSettings["TempoTimer"];
 
     stsLblIP.Text = $"{_controlID.Ip}:{_controlID.Porta} ({_controlID.EntradaSaida}) {_controlID.Name}";
 
-    AddMsg($"Conectando...");
+    AddMsg($"Conectando...", exibeDataEHora, exibeHora);
     //var _controller = new ControlIdController(controlID, service);
     var msg = _controller.Conectar();
 
-    AddMsg($"Conectar: {msg}");
+    AddMsg($"Conectar: {msg}", exibeDataEHora, exibeHora);
     StsLblSession.Text = _controlID.Session;
 
     if (msg.StartsWith("OK"))
     {
       tmrFluxo.Interval = Convert.ToInt32(tempoTimer);
 
-      AddMsg($"Ajustando Data e Hora...");
+      AddMsg($"Ajustando Data e Hora...", exibeDataEHora, exibeHora);
       msg = _controller.AjustarDataEHora(DateTime.Now);
-      AddMsg($"Ajustar Data e Hora: {msg}");
+      AddMsg($"Ajustar Data e Hora: {msg}", exibeDataEHora, exibeHora);
       Fluxo();
     }
   }
 
   private async Task Fluxo()
   {
+    stsLblReconectar.Text = $"{_controlID.CiclosReconexao}";
     tmrFluxo.Enabled = false;
-    txtBxMesagem.Clear();
-    AddMsg("Fluxo");
+    Logger.MesageLog("Fluxo", 1);
 
-    var saveChanges = true;
+    bool exibeDataEHora = false;
+    bool exibeHora = true;
+   
+    txtBxMesagem.Clear();
+    AddMsg("Fluxo", exibeDataEHora, exibeHora);
+
+    var saveChanges = false;
     if (_controlID.ImportaAcessos)
     {
       await ImportarRegistros(saveChanges);
-      Thread.Sleep(100);
     }
     //
+    Thread.Sleep(100);
     await IncluirUser(saveChanges);
     //
+    Thread.Sleep(100);
     await ExcluirUser(saveChanges);
-    
-
-    //if (_controlID.LiberaClube)
-    //{
-    //  LiberaClube();
-    //}
-
-    //if (_controlID.LiberaAcademia)
-    //{
-    //  LiberaAcademia();
-    //}
 
     try
     {
+       Logger.MesageLog("SaveChanges", 9);
       _contexto.SaveChanges();
       Thread.Sleep(100);
     }
-    catch (Exception ex) { 
+    catch (Exception ex) {
       //
+      Logger.LogError(ex);
+      tmrFluxo.Enabled = true;
+    }
+    //
+    _controlID.CiclosReconexao = _controlID.CiclosReconexao - 1;
+    if (_controlID.CiclosReconexao<0)
+    {
+      Desconectar();
+      Conecta();
     }
 
-    
-    //
-
     tmrFluxo.Enabled = true;
+  }
+
+  private void Desconectar()
+  {
+    bool exibeDataEHora = false;
+    bool exibeHora = true;
+    AddMsg("Desconectar", exibeDataEHora, exibeHora);
+    var msg = _controller.Desconectar();
+    AddMsg(msg, exibeDataEHora, exibeHora);
   }
 
   //private void LiberaAcademia()
@@ -140,10 +161,15 @@ public partial class FrmPrincipal : Form
 
   private async Task<string> ImportarRegistros(bool saveChanges = true)
   {
+    Logger.MesageLog("ImportarRegistros", 1);
     //
-    AddMsg($"Importando Registros...");
+    bool exibeDataEHora = false;
+    bool exibeHora = true;
+    AddMsg($"Importando Registros...", exibeDataEHora, exibeHora);
+
     var msg = await _controller.ImportarRegistros(saveChanges);
-    AddMsg($"{msg}");
+
+    AddMsg($"{msg}", exibeDataEHora, exibeHora);
 
     if (msg.Contains("Invalid session"))
     {
@@ -153,31 +179,62 @@ public partial class FrmPrincipal : Form
   }
   private async Task<string> IncluirUser(bool saveChanges = true)
   {
+    Logger.MesageLog("IncluirUser", 1);
     //
-    AddMsg($"Incluindo Usuários...");
-    
-    var msg = await _controller.IncluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo, saveChanges);
-    AddMsg($"{msg}");
+    bool exibeDataEHora = false;
+    bool exibeHora = true;
+    var msg = "";
+    AddMsg($"Incluindo Usuários...", exibeDataEHora, exibeHora);
+
+    var listPessoasEquip = await _controller.IncluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo, saveChanges);
     Thread.Sleep(100);
+    exibeHora = false;
+    foreach (var pessoaEquipamento in listPessoasEquip)
+    {
+      string nome20 = pessoaEquipamento.Nome.Length > 20 ? pessoaEquipamento.Nome.Substring(0, 20) : pessoaEquipamento.Nome.PadRight(20);
+
+      
+      msg = $"Id:{pessoaEquipamento.CodPessoa.ToString("D9")} Nomes: {nome20} Msg: {pessoaEquipamento.Msg}";
+      AddMsg(msg, exibeDataEHora, exibeHora);
+    }
+
+    msg = "FIM";
     return msg;
   }
   private async Task<string> ExcluirUser(bool saveChanges = true)
   {
-    AddMsg($"Excluindo Usuários...");
+    Logger.MesageLog("ExcluirUser", 1);
+    bool exibeDataEHora = false;
+    bool exibeHora = true;
+    AddMsg($"Excluindo Usuários..." ,exibeDataEHora ,exibeHora);
     var msg = await _controller.ExcluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo, saveChanges);
-    AddMsg($"{msg}");
+    AddMsg($"{msg}", exibeDataEHora, exibeHora);
     Thread.Sleep(100);
 
+    msg = "FIM";
     return msg;
   }
 
-  private void AddMsg(string msg)
+  private void AddMsg(string msg, bool exibeDataEHora = true, bool exibeHora = true)
   {
-    txtBxMesagem.AppendText($"{DateTime.Now: dd/MM/yyyy HH:mm:ss} {msg} {Environment.NewLine}");
+    Logger.MesageLog(msg, 9);
+    if (exibeDataEHora)
+    {
+      txtBxMesagem.AppendText($"{DateTime.Now: dd/MM/yy HH:mm} {msg} {Environment.NewLine}");
+    }
+    else if (exibeHora)
+    {
+      txtBxMesagem.AppendText($"{DateTime.Now: HH:mm:ss} {msg} {Environment.NewLine}");
+    }
+    else
+    {
+      txtBxMesagem.AppendText($"{msg} {Environment.NewLine}");
+    }      
   }
 
   private void FrmPrincipal_Shown(object sender, EventArgs e)
   {
+    Logger.MesageLog("FrmPrincipal_Shown", 2);
     //Registrosativo registros = new Registrosativo();
 
     //registros.Codpessoavisitada = 0;
@@ -194,7 +251,7 @@ public partial class FrmPrincipal : Form
 
     //RegistrosAtivosService registrosService = new RegistrosAtivosService(_contexto);
     //registrosService.Add(registros);
-
+    stsLblHoraAbertura.Text = $"Abertura: {DateTime.Now: dd/MM HH:mm}";
     Conecta();
     //Fluxo();
   }

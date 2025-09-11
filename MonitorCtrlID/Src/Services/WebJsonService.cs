@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using MonitorCtrlID.Src.Middleware;
+using System.Net;
 using System.Runtime.Serialization.Json;
 
 namespace MonitorCtrlID.Src.Services
@@ -40,11 +41,49 @@ namespace MonitorCtrlID.Src.Services
         using (WebResponse response = e.Response)
         {
           HttpWebResponse httpResponse = (HttpWebResponse)response;
-          Console.WriteLine("Error code: {0}", httpResponse.StatusCode);
+          //Console.WriteLine("Error code: {0}", httpResponse.StatusCode);
           using (Stream responseData = response.GetResponseStream())
           using (var reader = new StreamReader(responseData))
           {
             throw new Exception(reader.ReadToEnd());
+          }
+        }
+      }
+    }
+
+
+    static public string Send2(string uri, string session = null)
+    {
+      if (session != null)
+        uri += ".fcgi?session=" + session;
+      else
+        uri += ".fcgi";
+
+      try
+      {
+        var request = (HttpWebRequest)WebRequest.Create(uri);
+        request.ContentType = "application/json";
+        request.Method = "POST";
+
+
+        var response = (HttpWebResponse)request.GetResponse();
+        using (var streamReader = new StreamReader(response.GetResponseStream()))
+        {
+          return streamReader.ReadToEnd();
+        }
+      }
+      catch (WebException e)
+      {
+        using (WebResponse response = e.Response)
+        {
+          HttpWebResponse httpResponse = (HttpWebResponse)response;
+          //Console.WriteLine("Error code: {0}", httpResponse.StatusCode);
+          using (Stream responseData = response.GetResponseStream())
+          using (var reader = new StreamReader(responseData))
+          {
+            var newEX = new Exception(reader.ReadToEnd());
+            Logger.LogError(newEX);
+            throw newEX;
           }
         }
       }
@@ -82,7 +121,9 @@ namespace MonitorCtrlID.Src.Services
           using (Stream responseData = response.GetResponseStream())
           using (var reader = new StreamReader(responseData))
           {
-            throw new Exception(reader.ReadToEnd());
+            var newEX = new Exception(reader.ReadToEnd());
+            Logger.LogError(newEX);
+            throw newEX;
           }
         }
       }
@@ -117,7 +158,9 @@ namespace MonitorCtrlID.Src.Services
           using (Stream responseData = response.GetResponseStream())
           using (var reader = new StreamReader(responseData))
           {
-            throw new Exception(reader.ReadToEnd());
+            var newEX = new Exception(reader.ReadToEnd());
+            Logger.LogError(newEX);
+            throw newEX;
           }
         }
       }
@@ -150,7 +193,9 @@ namespace MonitorCtrlID.Src.Services
           using (Stream responseData = response.GetResponseStream())
           using (var reader = new StreamReader(responseData))
           {
-            throw new Exception(reader.ReadToEnd());
+            var newEX = new Exception(reader.ReadToEnd());
+            Logger.LogError(newEX);
+            throw newEX;
           }
         }
       }
