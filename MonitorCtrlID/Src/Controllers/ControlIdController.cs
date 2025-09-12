@@ -15,43 +15,43 @@ namespace MonitorCtrlID.Src.Controllers
       _service = service;
       _controlId = controlId;
     }
-    public string Conectar()
+    public async Task<string> Conectar()
     {
-      Logger.MesageLog("Controller Conectar", 1);
-      return _service.Conectar();
+      await Logger.MesageLog("Controller Conectar", 1);
+      return await _service.Conectar();
     }
 
 
-    public string Desconectar()
+    public async Task<string> Desconectar()
     {
-      Logger.MesageLog("Controller Desconectar", 1);
-      return _service.Desconectar();
+      await Logger.MesageLog("Controller Desconectar", 1);
+      return await _service.Desconectar();
     }
 
     public async Task<string> ImportarRegistros(bool saveChanges = true)
     {
-      Logger.MesageLog("ImportarRegistros controller", 9);
+      await Logger.MesageLog("ImportarRegistros controller", 9);
       return await _service.ImportarRegistros(_controlId, saveChanges);
     }
 
     public async Task<List<PesssoaEquipamentoModel>> IncluirUsuariosOperacao(int top, bool saveChanges = true)
     {
-      Logger.MesageLog("Controller IncluirUsuariosOperacao", 1);
+      await Logger.MesageLog("Controller IncluirUsuariosOperacao", 1);
       var listPessoasEquip = await _service.IncluirUsuariosOperacao(top, saveChanges);
       return listPessoasEquip;
     }
 
     public async Task<string> ExcluirUsuariosOperacao(int top, bool saveChanges = true)
     {
-      Logger.MesageLog("Controller ExcluirUsuariosOperacao", 1);
+      await Logger.MesageLog("Controller ExcluirUsuariosOperacao", 1);
       var msg = await _service.ExcluirUsuariosOperacao(top, saveChanges);
       return msg;
     }
 
-    public string AjustarDataEHora(DateTime dt)
+    public async Task<string> AjustarDataEHora(DateTime dt)
     {
-      Logger.MesageLog("Controller AjustarDataEHora", 1);
-      return _service.AjustarDataEHora(dt);
+      await Logger.MesageLog("Controller AjustarDataEHora", 1);
+      return await _service.AjustarDataEHora(dt);
     }
   }
 }

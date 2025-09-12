@@ -52,7 +52,7 @@ namespace MonitorCtrlID.Src.Services
     }
 
 
-    static public string Send2(string uri, string session = null)
+    public async static Task<string> Send2(string uri, string session = null)
     {
       if (session != null)
         uri += ".fcgi?session=" + session;
@@ -82,7 +82,7 @@ namespace MonitorCtrlID.Src.Services
           using (var reader = new StreamReader(responseData))
           {
             var newEX = new Exception(reader.ReadToEnd());
-            Logger.LogError(newEX);
+            await Logger.LogError(newEX);
             throw newEX;
           }
         }

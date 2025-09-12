@@ -1,13 +1,10 @@
-﻿using Microsoft.VisualBasic.ApplicationServices;
-using MonitorCtrlID.src.Models;
+﻿using MonitorCtrlID.src.Models;
 using MonitorCtrlID.Src.ControlId.Model;
 using MonitorCtrlID.Src.Data;
 using MonitorCtrlID.Src.Middleware;
 using MonitorCtrlID.Src.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using static MonitorCtrlID.Src.ControlId.IDAccess;
 
 namespace MonitorCtrlID.Src.Services
@@ -32,7 +29,7 @@ namespace MonitorCtrlID.Src.Services
       _pessooaService = new PessoaService(_contexto);
     }
 
-    public string Conectar()
+    public async Task<string> Conectar()
     {
       string msg;
       try
@@ -93,29 +90,29 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
-        Logger.LogError(ex);
+        await Logger.LogError(ex);
         msg = $"EROR: {ex.Message}";
       }
       return msg;
     }
 
 
-    public string Desconectar()
+    public async Task<string> Desconectar()
     {
       string msg;
       try
       {
-        msg = WebJsonService.Send2(controlId.Url + "logout", controlId.Session);
+        msg = await WebJsonService.Send2(controlId.Url + "logout", controlId.Session);
       }
       catch (Exception ex)
       {
-        Logger.LogError(ex);
+        await Logger.LogError(ex);
         msg = $"EROR: {ex.Message}";
       }
       return msg;
     }
 
-    public string AjustarDataEHora(DateTime dt)
+    public async Task<string> AjustarDataEHora(DateTime dt)
     {
       string msg;
       try
@@ -134,7 +131,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
-        Logger.LogError(ex);
+        await Logger.LogError(ex);
         msg = $"EROR: {ex.Message}";
       }
       return msg;
@@ -200,7 +197,7 @@ namespace MonitorCtrlID.Src.Services
       }
 
       _operacaoService.RemoveOperacoes(operacoes, saveChanges);
-      Thread.Sleep(100);
+      await Task.Delay(100);
       //return msg + "(" + usuarios + ")";
       return pessoasOperacao;
     }
@@ -226,7 +223,7 @@ namespace MonitorCtrlID.Src.Services
         }
       }
       _operacaoService.RemoveOperacoes(operacoes, saveChanges);
-      Thread.Sleep(100);
+      await Task.Delay(100);
       return msg;
     }
 
@@ -392,12 +389,22 @@ namespace MonitorCtrlID.Src.Services
           long timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
 
           var client = new HttpClient();
-          string url = $"{controlId.Url}user_set_image.fcgi?user_id={id}&session={controlId.Session}&timestamp={timestamp}";
+          string urlDestroy = $"{controlId.Url}user_destroy_image.fcgi?user_id={id}&session={controlId.Session}&timestamp={timestamp}";
+          string urlSet = $"{controlId.Url}user_set_image.fcgi?user_id={id}&session={controlId.Session}&timestamp={timestamp}";
 
           var content = new ByteArrayContent(imageBytes);
           content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-          var response = await client.PostAsync(url, content);
 
+          try
+          {
+            var responseExc = await client.PostAsync(urlDestroy, content);
+          }
+          catch (Exception ex)
+          {
+            //
+          }
+
+          var response = await client.PostAsync(urlSet, content);
           if (response.IsSuccessStatusCode)
           {
             await response.Content.ReadAsStringAsync();

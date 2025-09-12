@@ -2,25 +2,31 @@
 
 namespace MonitorCtrlID.Src.Middleware
 {
-  public static class Logger
+  public class Logger
   {
-    public static void LogError(Exception ex)
+    public static async Task LogError(Exception ex)
     {
-      string logFile = "log.txt";
+      var logPath = ConfigurationManager.AppSettings["PastaDeLogs"];
+      var deviceId = ConfigurationManager.AppSettings["DeviceCode"];
+      string logFile = $"{logPath}log_{deviceId}.txt";
+
       string logMessage = $"{DateTime.Now: dd/MM/yy HH:mm:ss} {ex.Message} {{Environment.NewLine}} {ex.StackTrace} {Environment.NewLine}";
-      File.AppendAllText(logFile, logMessage);
+      await File.AppendAllTextAsync(logFile, logMessage);
     }
 
 
-    public static void MesageLog(string msg, int level)
+    public static async Task MesageLog(string msg, int level)
     {
       var errorLevel = Convert.ToInt32(ConfigurationManager.AppSettings["LogErrorLevel"]);
-
+      
       if (level >= errorLevel)
       {
-        string logFile = "log.txt";
+        var logPath = ConfigurationManager.AppSettings["PastaDeLogs"];
+        var deviceId = ConfigurationManager.AppSettings["DeviceCode"];
+        string logFile = $"{logPath}log_{deviceId}.txt";
+
         string logMessage = $"{DateTime.Now: dd/MM/yy HH:mm:ss} {msg} {Environment.NewLine}";
-        File.AppendAllText(logFile, logMessage);
+        await File.AppendAllTextAsync(logFile, logMessage);
       }
     }
   }

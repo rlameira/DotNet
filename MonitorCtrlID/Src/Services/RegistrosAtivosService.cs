@@ -52,7 +52,7 @@ namespace MonitorCtrlID.Src.Services
     //  contexto.SaveChanges();
     //}
 
-    public void Add(Registrosativo entity, bool saveChances = true)
+    public async void Add(Registrosativo entity, bool saveChances = true)
     {
       try
       {
@@ -76,7 +76,7 @@ namespace MonitorCtrlID.Src.Services
           }
           catch (Exception ex)
           {
-            Logger.LogError(ex);
+            await Logger.LogError(ex);
             // Aqui você captura qualquer problema (concorrência, conexão, etc.)
             //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
           }
@@ -84,7 +84,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
-        Logger.LogError(ex);
+        await Logger.LogError(ex);
         // Aqui você captura qualquer problema (concorrência, conexão, etc.)
         //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
       }

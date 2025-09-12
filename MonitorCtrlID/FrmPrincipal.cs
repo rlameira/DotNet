@@ -5,6 +5,7 @@ using MonitorCtrlID.Src.Data;
 using MonitorCtrlID.Src.Middleware;
 using MonitorCtrlID.Src.Services;
 using System.Configuration;
+using System.Threading.Tasks;
 
 namespace MonitorCtrlID;
 
@@ -32,6 +33,7 @@ public partial class FrmPrincipal : Form
     _controlID.Password = ConfigurationManager.AppSettings["DevicePassword"];
     _controlID.EntradaSaida = ConfigurationManager.AppSettings["DeviceEntradaSaida"];
     _controlID.PastaDeFotos = ConfigurationManager.AppSettings["PastaDeFotos"];
+    
     _controlID.NumeroUsuariosPorCiclo = Convert.ToInt32(ConfigurationManager.AppSettings["NumeroUsersPorCiclo"]);
 
     _controlID.ImportaAcessos = (ConfigurationManager.AppSettings["ImportaAcessos"] == "SIM");
@@ -50,15 +52,19 @@ public partial class FrmPrincipal : Form
   {
   }
 
-  private void tmrFluxo_Tick(object sender, EventArgs e)
+  private async void tmrFluxo_Tick(object sender, EventArgs e)
   {
-    Fluxo();
+    tmrFluxo.Enabled = false; // pausa o timer para evitar chamadas concorrentes
+
+    await Fluxo(); // executa sua lógica assíncrona
+
+    tmrFluxo.Enabled = true; // reativa o timer depois que terminar
   }
 
 
-  private void Conecta()
+  private async Task Conecta()
   {
-    Logger.MesageLog("Conecta", 1);
+    await Logger.MesageLog("Conecta", 1);
     stsLblHoraConexao.Text = $"Conexao: {DateTime.Now: dd/MM HH:mm}";
     bool exibeDataEHora = false;
     bool exibeHora = true;
@@ -70,29 +76,30 @@ public partial class FrmPrincipal : Form
 
     stsLblIP.Text = $"{_controlID.Ip}:{_controlID.Porta} ({_controlID.EntradaSaida}) {_controlID.Name}";
 
-    AddMsg($"Conectando...", exibeDataEHora, exibeHora);
+    await AddMsg($"Conectando...", exibeDataEHora, exibeHora);
     //var _controller = new ControlIdController(controlID, service);
-    var msg = _controller.Conectar();
+    var msg = await _controller.Conectar();
 
-    AddMsg($"Conectar: {msg}", exibeDataEHora, exibeHora);
+    await AddMsg($"Conectar: {msg}", exibeDataEHora, exibeHora);
     StsLblSession.Text = _controlID.Session;
 
     if (msg.StartsWith("OK"))
     {
       tmrFluxo.Interval = Convert.ToInt32(tempoTimer);
 
-      AddMsg($"Ajustando Data e Hora...", exibeDataEHora, exibeHora);
-      msg = _controller.AjustarDataEHora(DateTime.Now);
-      AddMsg($"Ajustar Data e Hora: {msg}", exibeDataEHora, exibeHora);
-      Fluxo();
+      await AddMsg($"Ajustando Data e Hora...", exibeDataEHora, exibeHora);
+      msg = await _controller.AjustarDataEHora(DateTime.Now);
+      await AddMsg($"Ajustar Data e Hora: {msg}", exibeDataEHora, exibeHora);
+      await Fluxo();
+      tmrFluxo.Enabled = true;
     }
   }
 
-  private async Task Fluxo()
+   private async Task Fluxo()
   {
     stsLblReconectar.Text = $"{_controlID.CiclosReconexao}";
     tmrFluxo.Enabled = false;
-    Logger.MesageLog("Fluxo", 1);
+    await Logger.MesageLog("Fluxo", 1);
 
     bool exibeDataEHora = false;
     bool exibeHora = true;
@@ -106,41 +113,38 @@ public partial class FrmPrincipal : Form
       await ImportarRegistros(saveChanges);
     }
     //
-    Thread.Sleep(100);
+    await Task.Delay(100);
     await IncluirUser(saveChanges);
     //
-    Thread.Sleep(100);
+    await Task.Delay(100);
     await ExcluirUser(saveChanges);
 
     try
     {
-       Logger.MesageLog("SaveChanges", 9);
+       await Logger.MesageLog("SaveChanges", 9);
       _contexto.SaveChanges();
-      Thread.Sleep(100);
+      await Task.Delay(100);
     }
     catch (Exception ex) {
       //
-      Logger.LogError(ex);
-      tmrFluxo.Enabled = true;
+      await Logger.LogError(ex);
     }
     //
     _controlID.CiclosReconexao = _controlID.CiclosReconexao - 1;
     if (_controlID.CiclosReconexao<0)
     {
-      Desconectar();
-      Conecta();
+      await Desconectar();
+      await Conecta();
     }
-
-    tmrFluxo.Enabled = true;
   }
 
-  private void Desconectar()
+  private async Task Desconectar()
   {
     bool exibeDataEHora = false;
     bool exibeHora = true;
-    AddMsg("Desconectar", exibeDataEHora, exibeHora);
-    var msg = _controller.Desconectar();
-    AddMsg(msg, exibeDataEHora, exibeHora);
+    await AddMsg("Desconectar", exibeDataEHora, exibeHora);
+    var msg = await _controller.Desconectar();
+    await AddMsg(msg, exibeDataEHora, exibeHora);
   }
 
   //private void LiberaAcademia()
@@ -161,7 +165,7 @@ public partial class FrmPrincipal : Form
 
   private async Task<string> ImportarRegistros(bool saveChanges = true)
   {
-    Logger.MesageLog("ImportarRegistros", 1);
+    await Logger.MesageLog("ImportarRegistros", 1);
     //
     bool exibeDataEHora = false;
     bool exibeHora = true;
@@ -179,7 +183,7 @@ public partial class FrmPrincipal : Form
   }
   private async Task<string> IncluirUser(bool saveChanges = true)
   {
-    Logger.MesageLog("IncluirUser", 1);
+    await Logger.MesageLog("IncluirUser", 1);
     //
     bool exibeDataEHora = false;
     bool exibeHora = true;
@@ -187,7 +191,7 @@ public partial class FrmPrincipal : Form
     AddMsg($"Incluindo Usuários...", exibeDataEHora, exibeHora);
 
     var listPessoasEquip = await _controller.IncluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo, saveChanges);
-    Thread.Sleep(100);
+    await Task.Delay(100);
     exibeHora = false;
     foreach (var pessoaEquipamento in listPessoasEquip)
     {
@@ -203,21 +207,21 @@ public partial class FrmPrincipal : Form
   }
   private async Task<string> ExcluirUser(bool saveChanges = true)
   {
-    Logger.MesageLog("ExcluirUser", 1);
+    await Logger.MesageLog("ExcluirUser", 1);
     bool exibeDataEHora = false;
     bool exibeHora = true;
     AddMsg($"Excluindo Usuários..." ,exibeDataEHora ,exibeHora);
     var msg = await _controller.ExcluirUsuariosOperacao(_controlID.NumeroUsuariosPorCiclo, saveChanges);
     AddMsg($"{msg}", exibeDataEHora, exibeHora);
-    Thread.Sleep(100);
+    await Task.Delay(100);
 
     msg = "FIM";
     return msg;
   }
 
-  private void AddMsg(string msg, bool exibeDataEHora = true, bool exibeHora = true)
+  private async Task AddMsg(string msg, bool exibeDataEHora = true, bool exibeHora = true)
   {
-    Logger.MesageLog(msg, 9);
+    await Logger.MesageLog(msg, 9);
     if (exibeDataEHora)
     {
       txtBxMesagem.AppendText($"{DateTime.Now: dd/MM/yy HH:mm} {msg} {Environment.NewLine}");
@@ -232,9 +236,9 @@ public partial class FrmPrincipal : Form
     }      
   }
 
-  private void FrmPrincipal_Shown(object sender, EventArgs e)
+  private async void FrmPrincipal_Shown(object sender, EventArgs e)
   {
-    Logger.MesageLog("FrmPrincipal_Shown", 2);
+    await Logger.MesageLog("FrmPrincipal_Shown", 2);
     //Registrosativo registros = new Registrosativo();
 
     //registros.Codpessoavisitada = 0;
@@ -252,7 +256,7 @@ public partial class FrmPrincipal : Form
     //RegistrosAtivosService registrosService = new RegistrosAtivosService(_contexto);
     //registrosService.Add(registros);
     stsLblHoraAbertura.Text = $"Abertura: {DateTime.Now: dd/MM HH:mm}";
-    Conecta();
+    await Conecta();
     //Fluxo();
   }
 }

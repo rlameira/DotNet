@@ -45,7 +45,7 @@ namespace MonitorCtrlID.Src.Services
       return query.ToList();
     }
 
-    public void ExcluirOperacao(Operacao operacao, bool saveChanges = true)
+    public async void ExcluirOperacao(Operacao operacao, bool saveChanges = true)
     {
       try
       {
@@ -58,7 +58,7 @@ namespace MonitorCtrlID.Src.Services
       }
       catch (Exception ex)
       {
-        Logger.LogError(ex);
+        await Logger.LogError(ex);
         // Aqui você captura qualquer problema (concorrência, conexão, etc.)
         //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
       }

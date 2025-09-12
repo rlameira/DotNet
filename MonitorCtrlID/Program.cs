@@ -17,8 +17,11 @@ static class Program
     // Tratamento global de erros para threads UI
     Application.ThreadException += (sender, e) =>
     {
-      LogError(e.Exception);
-      MessageBox.Show("Ocorreu um erro. Verifique o log.txt.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+      if (!e.Exception.Message.Contains("The process cannot access the file"))
+      {
+        LogError(e.Exception);
+        //MessageBox.Show("Ocorreu um erro. Verifique o log.txt.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+      }
     };
 
     // Tratamento global para exceções não tratadas (threads não-UI)
@@ -39,7 +42,10 @@ static class Program
 
   private static void LogError(Exception ex)
   {
-    string logFile = "log.txt";
+    var logPath = ConfigurationManager.AppSettings["PastaDeLogs"];
+    var deviceId = ConfigurationManager.AppSettings["DeviceCode"];
+    string logFile = $"{logPath}log_Error{deviceId}.txt";
+
     string logMessage = $"[{DateTime.Now}] {ex.Message}\n{ex.StackTrace}\n\n";
     File.AppendAllText(logFile, logMessage);
   }

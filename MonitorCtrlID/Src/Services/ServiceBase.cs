@@ -47,7 +47,7 @@ namespace MonitorCtrlID.src.Services
       }
     }
 
-    public virtual void Update(T entity, bool saveChanges = true)
+    public async virtual void Update(T entity, bool saveChanges = true)
     {
       try
       {
@@ -59,13 +59,13 @@ namespace MonitorCtrlID.src.Services
       }
       catch (Exception ex)
       {
-        Logger.LogError(ex);
+        await Logger.LogError(ex);
         // Aqui você captura qualquer problema (concorrência, conexão, etc.)
         //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
       }
     }
 
-    public virtual void Delete(T entity, bool saveChanges = true)
+    public async virtual void Delete(T entity, bool saveChanges = true)
     {
       try
       {
@@ -77,7 +77,7 @@ namespace MonitorCtrlID.src.Services
       }
       catch (Exception ex)
       {
-        Logger.LogError(ex);
+        await Logger.LogError(ex);
         // Aqui você captura qualquer problema (concorrência, conexão, etc.)
         //Console.WriteLine($"Erro ao excluir operação: {ex.Message}");
       }
